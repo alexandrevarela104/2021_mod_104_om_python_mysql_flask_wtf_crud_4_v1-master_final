@@ -47,7 +47,7 @@ def genres_afficher(order_by, id_genre_sel):
 
             with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
                 if order_by == "ASC" and id_genre_sel == 0:
-                    strsql_genres_afficher = """SELECT id_user, nom_user, email, password FROM t_user ORDER BY id_user ASC"""
+                    strsql_genres_afficher = """SELECT id_user, nom_user, password FROM t_user ORDER BY id_user ASC"""
                     mc_afficher.execute(strsql_genres_afficher)
                 elif order_by == "ASC":
                     # C'EST LA QUE VOUS ALLEZ DEVOIR PLACER VOTRE PROPRE LOGIQUE MySql
@@ -56,11 +56,11 @@ def genres_afficher(order_by, id_genre_sel):
                     # donc, je précise les champs à afficher
                     # Constitution d'un dictionnaire pour associer l'id du genre sélectionné avec un nom de variable
                     valeur_id_genre_selected_dictionnaire = {"value_id_genre_selected": id_genre_sel}
-                    strsql_genres_afficher = """SELECT id_user, nom_user, email, password FROM t_user WHERE id_user = %(value_id_genre_selected)s"""
+                    strsql_genres_afficher = """SELECT id_user, nom_user, password FROM t_user WHERE id_user = %(value_id_genre_selected)s"""
 
                     mc_afficher.execute(strsql_genres_afficher, valeur_id_genre_selected_dictionnaire)
                 else:
-                    strsql_genres_afficher = """SELECT id_user, nom_user, email, password FROM t_user ORDER BY id_user DESC"""
+                    strsql_genres_afficher = """SELECT id_user, nom_user, password FROM t_user ORDER BY id_user DESC"""
 
                     mc_afficher.execute(strsql_genres_afficher)
 
@@ -131,12 +131,11 @@ def genres_ajouter_wtf():
                 mot_de_passe_wtf = form.mot_de_passe_wtf.data
 
                 valeurs_insertion_dictionnaire = {"value_nom_user": nom_user_wtf,
-                                                  "value_email": email_wtf,
                                                   "value_password": mot_de_passe_wtf}
 
                 print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
 
-                strsql_insert_user = """INSERT INTO t_user (id_user,nom_user,email,password) VALUES (NULL,%(value_nom_user)s,%(value_email)s,%(value_password)s)"""
+                strsql_insert_user = """INSERT INTO t_user (id_user,nom_user,password) VALUES (NULL,%(value_nom_user)s,%(value_password)s)"""
                 with MaBaseDeDonnee() as mconn_bd:
                     mconn_bd.mabd_execute(strsql_insert_user, valeurs_insertion_dictionnaire)
 
@@ -211,16 +210,13 @@ def genre_update_wtf():
             mot_de_passe_update = mot_de_passe_update.lower()
 
 
-            valeur_update_dictionnaire = {"value_id_user": id_user_update, "value_nom_user": nom_user_update,"value_email": email_update,"value_password": mot_de_passe_update}
+            valeur_update_dictionnaire = {"value_id_user": id_user_update, "value_nom_user": nom_user_update,"value_password": mot_de_passe_update}
             print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
 
             str_sql_update_intitulegenre = """UPDATE t_user SET nom_user = %(value_nom_user)s WHERE id_user = %(value_id_user)s"""
             with MaBaseDeDonnee() as mconn_bd:
                 mconn_bd.mabd_execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
 
-            str_sql_update_intitulegenre = """UPDATE t_user SET email = %(value_email)s WHERE id_user = %(value_id_user)s"""
-            with MaBaseDeDonnee() as mconn_bd:
-                mconn_bd.mabd_execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
 
             str_sql_update_intitulegenre = """UPDATE t_user SET password = %(value_password)s WHERE id_user = %(value_id_user)s"""
             with MaBaseDeDonnee() as mconn_bd:
@@ -235,7 +231,7 @@ def genre_update_wtf():
             return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=id_user_update))
         elif request.method == "GET":
             # Opération sur la BD pour récupérer "id_user" et "nom_user" de la "t_user"
-            str_sql_id_user = "SELECT id_user, nom_user, email, password FROM t_user WHERE id_user = %(value_id_user)s"
+            str_sql_id_user = "SELECT id_user, nom_user, password FROM t_user WHERE id_user = %(value_id_user)s"
             valeur_select_dictionnaire = {"value_id_user": id_user_update}
             mybd_curseur = MaBaseDeDonnee().connexion_bd.cursor()
             mybd_curseur.execute(str_sql_id_user, valeur_select_dictionnaire)
@@ -246,7 +242,6 @@ def genre_update_wtf():
 
             # Afficher la valeur sélectionnée dans le champ du formulaire "genre_update_wtf.html"
             form_update.nom_user_update_wtf.data = data_nom_genre["nom_user"]
-            form_update.email_update_wtf.data = data_nom_genre["email"]
             form_update.mot_de_passe_update_wtf.data = data_nom_genre["password"]
 
     # OM 2020.04.16 ATTENTION à l'ordre des excepts, il est très important de respecter l'ordre.
@@ -362,7 +357,7 @@ def genre_delete_wtf():
             session['data_films_attribue_genre_delete'] = data_films_attribue_genre_delete
 
             # Opération sur la BD pour récupérer "id_user" et "nom_user" de la "t_user"
-            str_sql_id_user = "SELECT id_user, nom_user, email, password FROM t_user WHERE id_user = %(value_id_user)s"
+            str_sql_id_user = "SELECT id_user, nom_user, password FROM t_user WHERE id_user = %(value_id_user)s"
 
             mybd_curseur.execute(str_sql_id_user, valeur_select_dictionnaire)
             # Une seule valeur est suffisante "fetchone()",

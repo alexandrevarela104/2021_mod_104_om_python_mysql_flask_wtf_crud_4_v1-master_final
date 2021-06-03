@@ -16,6 +16,7 @@ CREATE DATABASE IF NOT EXISTS varela_tavares_alexandre_info1b_gestion_de_facture
 USE varela_tavares_alexandre_info1b_gestion_de_facture;
 -- --------------------------------------------------------
 
+
 --
 -- Structure de la table `t_attente`
 --
@@ -61,6 +62,28 @@ INSERT INTO `t_destinataire` (`id_destinataire`, `fk_user`, `fk_facture`, `desti
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `t_email`
+--
+
+CREATE TABLE `t_email` (
+  `id_email` int(11) NOT NULL,
+  `email` varchar(80) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Contenu de la table `t_email`
+--
+
+INSERT INTO `t_email` (`id_email`, `email`) VALUES
+(1, 'alexbenifca@gmail.com'),
+(2, 'bigkichta@gmail.com'),
+(3, 'marlene@hotmail.ch'),
+(4, 'orgorgorg@gmail.com'),
+(5, 'mamanangai@lkdfaéjs.ch');
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `t_facture`
 --
 
@@ -78,7 +101,8 @@ CREATE TABLE `t_facture` (
 INSERT INTO `t_facture` (`id_facture`, `numero_facture`, `somme`, `delai`) VALUES
 (1, 2021, 500, '2021-04-01'),
 (2, 2000, 423.25, '2021-03-31'),
-(3, 312, 450, '2021-03-31');
+(3, 312, 450, '2021-03-31'),
+(4, 21, 50, '2021-07-14');
 
 -- --------------------------------------------------------
 
@@ -98,9 +122,9 @@ CREATE TABLE `t_motif` (
 --
 
 INSERT INTO `t_motif` (`id_motif`, `fk_user`, `fk_facture`, `motif`) VALUES
-(1, 1, 1, 'assurance maladie'),
 (2, 2, 2, 'amende pour conduite sans permis '),
-(3, 3, 3, 'Fournitures scolaires');
+(3, 3, 3, 'Fournitures scolaires'),
+(4, 5, 4, 'retard de payement');
 
 -- --------------------------------------------------------
 
@@ -155,7 +179,6 @@ INSERT INTO `t_rappel` (`id_rappel`, `fk_user`, `fk_facture`, `date_de_rappel`) 
 CREATE TABLE `t_user` (
   `id_user` int(11) NOT NULL,
   `nom_user` varchar(30) NOT NULL,
-  `email` varchar(60) NOT NULL,
   `password` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -163,11 +186,33 @@ CREATE TABLE `t_user` (
 -- Contenu de la table `t_user`
 --
 
-INSERT INTO `t_user` (`id_user`, `nom_user`, `email`, `password`) VALUES
-(1, 'alex2001', 'alex2001@gmail.com', 'root'),
-(2, 'marie2', 'marie2@gmail.com', 'rooter'),
-(3, 'gaspar12', 'gaspardu13@hotmail.com', 'gaspargaspar'),
-(4, 'marlene', 'marleche@gmail.com', 'password');
+INSERT INTO `t_user` (`id_user`, `nom_user`, `password`) VALUES
+(1, 'alex2001', 'root'),
+(2, 'marie2', 'rooter'),
+(3, 'gaspar12', 'gaspargaspar'),
+(4, 'marlene', 'password'),
+(5, 'bigkischta', 'jfaiefe');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `t_user_email`
+--
+
+CREATE TABLE `t_user_email` (
+  `id_user_email` int(11) NOT NULL,
+  `fk_user` int(11) DEFAULT NULL,
+  `fk_email` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Contenu de la table `t_user_email`
+--
+
+INSERT INTO `t_user_email` (`id_user_email`, `fk_user`, `fk_email`) VALUES
+(1, 1, 1),
+(2, 3, 4),
+(3, 3, 5);
 
 --
 -- Index pour les tables exportées
@@ -188,6 +233,12 @@ ALTER TABLE `t_destinataire`
   ADD PRIMARY KEY (`id_destinataire`),
   ADD KEY `fk_user` (`fk_user`),
   ADD KEY `fk_destinataire` (`fk_facture`);
+
+--
+-- Index pour la table `t_email`
+--
+ALTER TABLE `t_email`
+  ADD PRIMARY KEY (`id_email`);
 
 --
 -- Index pour la table `t_facture`
@@ -229,6 +280,14 @@ ALTER TABLE `t_user`
   ADD PRIMARY KEY (`id_user`);
 
 --
+-- Index pour la table `t_user_email`
+--
+ALTER TABLE `t_user_email`
+  ADD PRIMARY KEY (`id_user_email`),
+  ADD KEY `fk_user` (`fk_user`),
+  ADD KEY `fk_email` (`fk_email`);
+
+--
 -- AUTO_INCREMENT pour les tables exportées
 --
 
@@ -243,15 +302,20 @@ ALTER TABLE `t_attente`
 ALTER TABLE `t_destinataire`
   MODIFY `id_destinataire` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 --
+-- AUTO_INCREMENT pour la table `t_email`
+--
+ALTER TABLE `t_email`
+  MODIFY `id_email` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+--
 -- AUTO_INCREMENT pour la table `t_facture`
 --
 ALTER TABLE `t_facture`
-  MODIFY `id_facture` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_facture` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT pour la table `t_motif`
 --
 ALTER TABLE `t_motif`
-  MODIFY `id_motif` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_motif` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT pour la table `t_payement`
 --
@@ -266,7 +330,12 @@ ALTER TABLE `t_rappel`
 -- AUTO_INCREMENT pour la table `t_user`
 --
 ALTER TABLE `t_user`
-  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_user` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+--
+-- AUTO_INCREMENT pour la table `t_user_email`
+--
+ALTER TABLE `t_user_email`
+  MODIFY `id_user_email` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 --
 -- Contraintes pour les tables exportées
 --
@@ -306,4 +375,10 @@ ALTER TABLE `t_rappel`
   ADD CONSTRAINT `t_rappel_ibfk_1` FOREIGN KEY (`fk_user`) REFERENCES `t_user` (`id_user`),
   ADD CONSTRAINT `t_rappel_ibfk_2` FOREIGN KEY (`fk_facture`) REFERENCES `t_facture` (`id_facture`);
 
+--
+-- Contraintes pour la table `t_user_email`
+--
+ALTER TABLE `t_user_email`
+  ADD CONSTRAINT `t_user_email_ibfk_1` FOREIGN KEY (`fk_user`) REFERENCES `t_user` (`id_user`),
+  ADD CONSTRAINT `t_user_email_ibfk_2` FOREIGN KEY (`fk_email`) REFERENCES `t_email` (`id_email`);
 

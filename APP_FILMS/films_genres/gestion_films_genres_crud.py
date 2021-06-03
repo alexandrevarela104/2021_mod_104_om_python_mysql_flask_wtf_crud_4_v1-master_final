@@ -31,50 +31,50 @@ from APP_FILMS.erreurs.msg_erreurs import *
 """
 
 
-@obj_mon_application.route("/films_genres_afficher/<int:id_genre_sel>", methods=['GET', 'POST'])
-def films_genres_afficher(id_genre_sel):
+@obj_mon_application.route("/films_genres_afficher/<int:id_film_sel>", methods=['GET', 'POST'])
+def films_genres_afficher(id_film_sel):
     if request.method == "GET":
         try:
             try:
                 # Renvoie une erreur si la connexion est perdue.
                 MaBaseDeDonnee().connexion_bd.ping(False)
-            except Exception as Exception_init_motifs_genres_afficher:
-                code, msg = Exception_init_motifs_genres_afficher.args
+            except Exception as Exception_init_films_genres_afficher:
+                code, msg = Exception_init_films_genres_afficher.args
                 flash(f"{error_codes.get(code, msg)} ", "danger")
-                flash(f"Exception _init_motifs_genres_afficher problème de connexion BD : {sys.exc_info()[0]} "
-                      f"{Exception_init_motifs_genres_afficher.args[0]} , "
-                      f"{Exception_init_motifs_genres_afficher}", "danger")
+                flash(f"Exception _init_films_genres_afficher problème de connexion BD : {sys.exc_info()[0]} "
+                      f"{Exception_init_films_genres_afficher.args[0]} , "
+                      f"{Exception_init_films_genres_afficher}", "danger")
                 raise MaBdErreurConnexion(f"{msg_erreurs['ErreurConnexionBD']['message']} {erreur.args[0]}")
 
             with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
-                strsql_genres_films_afficher_data = """   SELECT id_motif, motif,
-                                                            GROUP_CONCAT(nom_user) as GenresFilms FROM t_motif
-                                                            RIGHT JOIN t_facture ON t_facture.id_facture = t_motif.fk_facture
-                                                            LEFT JOIN t_user ON t_user.id_user = t_motif.fk_user
-                                                             GROUP BY id_motif"""
-                if id_genre_sel == 0:
+                strsql_genres_films_afficher_data = """SELECT id_user , nom_user,
+                                                               GROUP_CONCAT(email) as GenresFilms FROM t_user_email
+                                                               RIGHT JOIN t_user ON t_user.id_user = t_user_email.fk_user
+                                                               LEFT JOIN t_email ON t_email.id_email = t_user_email.fk_email
+                                                              GROUP BY id_user"""
+                if id_film_sel == 0:
                     # le paramètre 0 permet d'afficher tous les films
                     # Sinon le paramètre représente la valeur de l'id du film
                     mc_afficher.execute(strsql_genres_films_afficher_data)
                 else:
                     # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
-                    valeur_id_genre_selected_dictionnaire = {"value_id_genre_selected": id_genre_sel}
+                    valeur_id_film_selected_dictionnaire = {"value_id_film_selected": id_film_sel}
                     # En MySql l'instruction HAVING fonctionne comme un WHERE... mais doit être associée à un GROUP BY
                     # L'opérateur += permet de concaténer une nouvelle valeur à la valeur de gauche préalablement définie.
-                    strsql_genres_films_afficher_data += """ HAVING id_motif= %(value_id_genre_selected)s"""
+                    strsql_genres_films_afficher_data += """ HAVING id_user= %(value_id_film_selected)s"""
 
-                    mc_afficher.execute(strsql_genres_films_afficher_data, valeur_id_genre_selected_dictionnaire)
+                    mc_afficher.execute(strsql_genres_films_afficher_data, valeur_id_film_selected_dictionnaire)
 
                 # Récupère les données de la requête.
                 data_genres_films_afficher = mc_afficher.fetchall()
                 print("data_genres ", data_genres_films_afficher, " Type : ", type(data_genres_films_afficher))
 
                 # Différencier les messages.
-                if not data_genres_films_afficher and id_genre_sel == 0:
-                    flash("""La table "t_motif" est vide. !""", "warning")
-                elif not data_genres_films_afficher and id_genre_sel > 0:
-                    # Si l'utilisateur change l'id_motif dans l'URL et qu'il ne correspond à aucun film
-                    flash(f"Le film {id_genre_sel} demandé n'existe pas !!", "warning")
+                if not data_genres_films_afficher and id_film_sel == 0:
+                    flash("""La table "t_film" est vide. !""", "warning")
+                elif not data_genres_films_afficher and id_film_sel > 0:
+                    # Si l'utilisateur change l'id_film dans l'URL et qu'il ne correspond à aucun film
+                    flash(f"Le film {id_film_sel} demandé n'existe pas !!", "warning")
                 else:
                     flash(f"Données films et genres affichés !!", "success")
 
@@ -90,13 +90,13 @@ def films_genres_afficher(id_genre_sel):
 
 
 """
-    nom: edit_motif_selected
+    nom: edit_genre_film_selected
     On obtient un objet "objet_dumpbd"
 
     Récupère la liste de tous les genres du film sélectionné par le bouton "MODIFIER" de "films_genres_afficher.html"
 
     Dans une liste déroulante particulière (tags-selector-tagselect), on voit :
-    1) Tous les genres contenus dans la "t_user".
+    1) Tous les genres contenus dans la "t_genre".
     2) Les genres attribués au film selectionné.
     3) Les genres non-attribués au film sélectionné.
 
@@ -105,29 +105,29 @@ def films_genres_afficher(id_genre_sel):
 """
 
 
-@obj_mon_application.route("/edit_motif_selected", methods=['GET', 'POST'])
-def edit_motif_selected():
+@obj_mon_application.route("/edit_genre_film_selected", methods=['GET', 'POST'])
+def edit_genre_film_selected():
     if request.method == "GET":
         try:
             with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
-                strsql_genres_afficher = """SELECT id_user, nom_user FROM t_user ORDER BY id_user"""
+                strsql_genres_afficher = """SELECT id_email, email FROM t_email ORDER BY id_email ASC"""
                 mc_afficher.execute(strsql_genres_afficher)
             data_genres_all = mc_afficher.fetchall()
-            print("dans edit_motif_selected ---> data_genres_all", data_genres_all)
+            print("dans edit_genre_film_selected ---> data_genres_all", data_genres_all)
 
-            # Récupère la valeur de "id_motif" du formulaire html "films_genres_afficher.html"
-            # l'utilisateur clique sur le bouton "Modifier" et on récupère la valeur de "id_motif"
-            # grâce à la variable "id_motif_genres_edit_html" dans le fichier "films_genres_afficher.html"
-            # href="{{ url_for('edit_motif_selected', id_motif_genres_edit_html=row.id_motif) }}"
-            id_motif_genres_edit = request.values['id_motif_genres_edit_html']
+            # Récupère la valeur de "id_film" du formulaire html "films_genres_afficher.html"
+            # l'utilisateur clique sur le bouton "Modifier" et on récupère la valeur de "id_film"
+            # grâce à la variable "id_film_genres_edit_html" dans le fichier "films_genres_afficher.html"
+            # href="{{ url_for('edit_genre_film_selected', id_film_genres_edit_html=row.id_film) }}"
+            id_film_genres_edit = request.values['id_film_genres_edit_html']
 
             # Mémorise l'id du film dans une variable de session
             # (ici la sécurité de l'application n'est pas engagée)
             # il faut éviter de stocker des données sensibles dans des variables de sessions.
-            session['session_id_motif_genres_edit'] = id_motif_genres_edit
+            session['session_id_film_genres_edit'] = id_film_genres_edit
 
             # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
-            valeur_id_genre_selected_dictionnaire = {"value_id_genre_selected": id_motif_genres_edit}
+            valeur_id_film_selected_dictionnaire = {"value_id_film_selected": id_film_genres_edit}
 
             # Récupère les données grâce à 3 requêtes MySql définie dans la fonction genres_films_afficher_data
             # 1) Sélection du film choisi
@@ -135,23 +135,23 @@ def edit_motif_selected():
             # 3) Sélection des genres "pas encore" attribués pour le film choisi.
             # ATTENTION à l'ordre d'assignation des variables retournées par la fonction "genres_films_afficher_data"
             data_genre_film_selected, data_genres_films_non_attribues, data_genres_films_attribues = \
-                genres_films_afficher_data(valeur_id_genre_selected_dictionnaire)
+                genres_films_afficher_data(valeur_id_film_selected_dictionnaire)
 
             print(data_genre_film_selected)
-            lst_data_film_selected = [item['id_motif'] for item in data_genre_film_selected]
+            lst_data_film_selected = [item['id_user'] for item in data_genre_film_selected]
             print("lst_data_film_selected  ", lst_data_film_selected,
                   type(lst_data_film_selected))
 
             # Dans le composant "tags-selector-tagselect" on doit connaître
             # les genres qui ne sont pas encore sélectionnés.
-            lst_data_genres_films_non_attribues = [item['id_user'] for item in data_genres_films_non_attribues]
+            lst_data_genres_films_non_attribues = [item['id_email'] for item in data_genres_films_non_attribues]
             session['session_lst_data_genres_films_non_attribues'] = lst_data_genres_films_non_attribues
             print("lst_data_genres_films_non_attribues  ", lst_data_genres_films_non_attribues,
                   type(lst_data_genres_films_non_attribues))
 
             # Dans le composant "tags-selector-tagselect" on doit connaître
             # les genres qui sont déjà sélectionnés.
-            lst_data_genres_films_old_attribues = [item['id_user'] for item in data_genres_films_attribues]
+            lst_data_genres_films_old_attribues = [item['id_email'] for item in data_genres_films_attribues]
             session['session_lst_data_genres_films_old_attribues'] = lst_data_genres_films_old_attribues
             print("lst_data_genres_films_old_attribues  ", lst_data_genres_films_old_attribues,
                   type(lst_data_genres_films_old_attribues))
@@ -162,18 +162,18 @@ def edit_motif_selected():
             print(" data_genres_films_attribues ", data_genres_films_attribues, "type ",
                   type(data_genres_films_attribues))
 
-            # Extrait les valeurs contenues dans la table "t_users", colonne "intitule_genre"
-            # Le composant javascript "tagify" pour afficher les tags n'a pas besoin de l'id_motif
-            lst_data_genres_films_non_attribues = [item['nom_user'] for item in data_genres_films_non_attribues]
-            print("lst_all_genres gf_edit_motif_selected ", lst_data_genres_films_non_attribues,
+            # Extrait les valeurs contenues dans la table "t_genres", colonne "intitule_genre"
+            # Le composant javascript "tagify" pour afficher les tags n'a pas besoin de l'id_genre
+            lst_data_genres_films_non_attribues = [item['email'] for item in data_genres_films_non_attribues]
+            print("lst_all_genres gf_edit_genre_film_selected ", lst_data_genres_films_non_attribues,
                   type(lst_data_genres_films_non_attribues))
 
-        except Exception as Exception_edit_motif_selected:
-            code, msg = Exception_edit_motif_selected.args
+        except Exception as Exception_edit_genre_film_selected:
+            code, msg = Exception_edit_genre_film_selected.args
             flash(f"{error_codes.get(code, msg)} ", "danger")
-            flash(f"Exception edit_motif_selected : {sys.exc_info()[0]} "
-                  f"{Exception_edit_motif_selected.args[0]} , "
-                  f"{Exception_edit_motif_selected}", "danger")
+            flash(f"Exception edit_genre_film_selected : {sys.exc_info()[0]} "
+                  f"{Exception_edit_genre_film_selected.args[0]} , "
+                  f"{Exception_edit_genre_film_selected}", "danger")
 
     return render_template("films_genres/films_genres_modifier_tags_dropbox.html",
                            data_genres=data_genres_all,
@@ -188,7 +188,7 @@ def edit_motif_selected():
     Récupère la liste de tous les genres du film sélectionné par le bouton "MODIFIER" de "films_genres_afficher.html"
 
     Dans une liste déroulante particulière (tags-selector-tagselect), on voit :
-    1) Tous les genres contenus dans la "t_user".
+    1) Tous les genres contenus dans la "t_genre".
     2) Les genres attribués au film selectionné.
     3) Les genres non-attribués au film sélectionné.
 
@@ -201,8 +201,8 @@ def update_genre_film_selected():
     if request.method == "POST":
         try:
             # Récupère l'id du film sélectionné
-            id_genre_selected = session['session_id_motif_genres_edit']
-            print("session['session_id_motif_genres_edit'] ", session['session_id_motif_genres_edit'])
+            id_film_selected = session['session_id_film_genres_edit']
+            print("session['session_id_film_genres_edit'] ", session['session_id_film_genres_edit'])
 
             # Récupère la liste des genres qui ne sont pas associés au film sélectionné.
             old_lst_data_genres_films_non_attribues = session['session_lst_data_genres_films_non_attribues']
@@ -222,48 +222,48 @@ def update_genre_film_selected():
 
             # OM 2021.05.02 Exemple : Dans "name_select_tags" il y a ['4','65','2']
             # On transforme en une liste de valeurs numériques. [4,65,2]
-            new_lst_int_motif_old = list(map(int, new_lst_str_genres_films))
-            print("new_lst_motif ", new_lst_int_motif_old, "type new_lst_motif ",
-                  type(new_lst_int_motif_old))
+            new_lst_int_genre_film_old = list(map(int, new_lst_str_genres_films))
+            print("new_lst_genre_film ", new_lst_int_genre_film_old, "type new_lst_genre_film ",
+                  type(new_lst_int_genre_film_old))
 
             # Pour apprécier la facilité de la vie en Python... "les ensembles en Python"
             # https://fr.wikibooks.org/wiki/Programmation_Python/Ensembles
-            # OM 2021.05.02 Une liste de "id_motif" qui doivent être effacés de la table intermédiaire "t_motif".
+            # OM 2021.05.02 Une liste de "id_genre" qui doivent être effacés de la table intermédiaire "t_genre_film".
             lst_diff_genres_delete_b = list(
-                set(old_lst_data_genres_films_attribues) - set(new_lst_int_motif_old))
+                set(old_lst_data_genres_films_attribues) - set(new_lst_int_genre_film_old))
             print("lst_diff_genres_delete_b ", lst_diff_genres_delete_b)
 
-            # Une liste de "id_motif" qui doivent être ajoutés à la "t_motif"
+            # Une liste de "id_genre" qui doivent être ajoutés à la "t_genre_film"
             lst_diff_genres_insert_a = list(
-                set(new_lst_int_motif_old) - set(old_lst_data_genres_films_attribues))
+                set(new_lst_int_genre_film_old) - set(old_lst_data_genres_films_attribues))
             print("lst_diff_genres_insert_a ", lst_diff_genres_insert_a)
 
             # SQL pour insérer une nouvelle association entre
-            # "fk_facture"/"id_motif" et "fk_user"/"id_motif" dans la "t_motif"
-            strsql_insert_motif = """INSERT INTO t_motif (id_motif, fk_user, fk_facture)
-                                                    VALUES (NULL, %(value_fk_user)s, %(value_fk_facture)s)"""
+            # "fk_film"/"id_film" et "fk_genre"/"id_genre" dans la "t_genre_film"
+            strsql_insert_genre_film = """INSERT INTO t_user_email (id_user_email, fk_email, fk_user)
+                                                    VALUES (NULL, %(value_fk_email)s, %(value_fk_user)s)"""
 
-            # SQL pour effacer une (des) association(s) existantes entre "id_motif" et "id_motif" dans la "t_motif"
-            strsql_delete_genre_film = """DELETE FROM t_motif WHERE fk_user = %(value_fk_user)s AND fk_facture = %(value_fk_facture)s"""
+            # SQL pour effacer une (des) association(s) existantes entre "id_film" et "id_genre" dans la "t_genre_film"
+            strsql_delete_genre_film = """DELETE FROM t_user_email WHERE fk_email = %(value_fk_email)s AND fk_user = %(value_fk_user)s"""
 
             with MaBaseDeDonnee() as mconn_bd:
-                # Pour le film sélectionné, parcourir la liste des genres à INSÉRER dans la "t_motif".
+                # Pour le film sélectionné, parcourir la liste des genres à INSÉRER dans la "t_genre_film".
                 # Si la liste est vide, la boucle n'est pas parcourue.
-                for id_motif_ins in lst_diff_genres_insert_a:
+                for id_genre_ins in lst_diff_genres_insert_a:
                     # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
-                    # et "id_motif_ins" (l'id du genre dans la liste) associé à une variable.
-                    valeurs_film_sel_genre_sel_dictionnaire = {"value_fk_facture": id_genre_selected,
-                                                               "value_fk_user": id_motif_ins}
+                    # et "id_genre_ins" (l'id du genre dans la liste) associé à une variable.
+                    valeurs_film_sel_genre_sel_dictionnaire = {"value_fk_user": id_film_selected,
+                                                               "value_fk_email": id_genre_ins}
 
-                    mconn_bd.mabd_execute(strsql_insert_motif, valeurs_film_sel_genre_sel_dictionnaire)
+                    mconn_bd.mabd_execute(strsql_insert_genre_film, valeurs_film_sel_genre_sel_dictionnaire)
 
-                # Pour le film sélectionné, parcourir la liste des genres à EFFACER dans la "t_motif".
+                # Pour le film sélectionné, parcourir la liste des genres à EFFACER dans la "t_genre_film".
                 # Si la liste est vide, la boucle n'est pas parcourue.
-                for id_motif_del in lst_diff_genres_delete_b:
+                for id_genre_del in lst_diff_genres_delete_b:
                     # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
-                    # et "id_motif_del" (l'id du genre dans la liste) associé à une variable.
-                    valeurs_film_sel_genre_sel_dictionnaire = {"value_fk_facture": id_genre_selected,
-                                                               "value_fk_user": id_motif_del}
+                    # et "id_genre_del" (l'id du genre dans la liste) associé à une variable.
+                    valeurs_film_sel_genre_sel_dictionnaire = {"value_fk_user": id_film_selected,
+                                                               "value_fk_email": id_genre_del}
 
                     # Du fait de l'utilisation des "context managers" on accède au curseur grâce au "with".
                     # la subtilité consiste à avoir une méthode "mabd_execute" dans la classe "MaBaseDeDonnee"
@@ -278,9 +278,9 @@ def update_genre_film_selected():
                   f"{Exception_update_genre_film_selected.args[0]} , "
                   f"{Exception_update_genre_film_selected}", "danger")
 
-    # Après cette mise à jour de la table intermédiaire "t_motif",
+    # Après cette mise à jour de la table intermédiaire "t_genre_film",
     # on affiche les films et le(urs) genre(s) associé(s).
-    return redirect(url_for('films_genres_afficher', id_genre_sel=id_genre_selected))
+    return redirect(url_for('films_genres_afficher', id_film_sel=id_film_selected))
 
 
 """
@@ -293,29 +293,29 @@ def update_genre_film_selected():
 """
 
 
-def genres_films_afficher_data(valeur_id_genre_selected_dict):
-    print("valeur_id_genre_selected_dict...", valeur_id_genre_selected_dict)
+def genres_films_afficher_data(valeur_id_film_selected_dict):
+    print("valeur_id_film_selected_dict...", valeur_id_film_selected_dict)
     try:
 
-        strsql_film_selected = """SELECT id_motif, motif, GROUP_CONCAT(id_user) as GenresFilms FROM t_motif
-                                        INNER JOIN t_facture ON t_facture.id_facture = t_motif.fk_facture
-                                        INNER JOIN t_user ON t_user.id_user = t_motif.fk_user
-                                        WHERE id_motif = %(value_id_genre_selected)s"""
+        strsql_film_selected = """SELECT id_user, nom_user, GROUP_CONCAT(id_email) as GenresFilms FROM t_user_email
+                                        INNER JOIN t_user ON t_user.id_user = t_user_email.fk_user
+                                        INNER JOIN t_email ON t_email.id_email = t_user_email.fk_email
+                                        WHERE id_user = %(value_id_film_selected)s"""
 
-        strsql_genres_films_non_attribues = """SELECT id_user, nom_user FROM t_user WHERE id_user not in(SELECT id_user as idGenresFilms FROM t_motif
-                                                    INNER JOIN t_facture ON t_facture.id_facture = t_motif.fk_facture
-                                                    INNER JOIN t_user ON t_user.id_user = t_motif.fk_user
-                                                    WHERE id_motif = %(value_id_genre_selected)s)"""
+        strsql_genres_films_non_attribues = """SELECT id_email, email FROM t_email WHERE id_email not in(SELECT id_email as idGenresFilms FROM t_user_email
+                                                    INNER JOIN t_user ON t_user.id_user = t_user_email.fk_user
+                                                     INNER JOIN t_email ON t_email.id_email = t_user_email.fk_email
+                                                    WHERE id_user = %(value_id_film_selected)s)"""
 
-        strsql_genres_films_attribues = """SELECT id_motif, motif FROM t_motif
-                                            INNER JOIN t_facture ON t_facture.id_facture = t_motif.fk_facture
-                                            INNER JOIN t_user ON t_user.id_user = t_motif.fk_user
-                                            WHERE id_motif = %(value_id_genre_selected)s"""
+        strsql_genres_films_attribues = """SELECT id_user,id_email, email FROM t_user_email
+											INNER JOIN t_user ON t_user.id_user = t_user_email.fk_user
+                                            INNER JOIN t_email ON t_email.id_email = t_user_email.fk_email
+                                            WHERE id_user = %(value_id_film_selected)s"""
 
         # Du fait de l'utilisation des "context managers" on accède au curseur grâce au "with".
         with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
             # Envoi de la commande MySql
-            mc_afficher.execute(strsql_genres_films_non_attribues, valeur_id_genre_selected_dict)
+            mc_afficher.execute(strsql_genres_films_non_attribues, valeur_id_film_selected_dict)
             # Récupère les données de la requête.
             data_genres_films_non_attribues = mc_afficher.fetchall()
             # Affichage dans la console
@@ -324,14 +324,14 @@ def genres_films_afficher_data(valeur_id_genre_selected_dict):
                   type(data_genres_films_non_attribues))
 
             # Envoi de la commande MySql
-            mc_afficher.execute(strsql_film_selected, valeur_id_genre_selected_dict)
+            mc_afficher.execute(strsql_film_selected, valeur_id_film_selected_dict)
             # Récupère les données de la requête.
             data_film_selected = mc_afficher.fetchall()
             # Affichage dans la console
             print("data_film_selected  ", data_film_selected, " Type : ", type(data_film_selected))
 
             # Envoi de la commande MySql
-            mc_afficher.execute(strsql_genres_films_attribues, valeur_id_genre_selected_dict)
+            mc_afficher.execute(strsql_genres_films_attribues, valeur_id_film_selected_dict)
             # Récupère les données de la requête.
             data_genres_films_attribues = mc_afficher.fetchall()
             # Affichage dans la console

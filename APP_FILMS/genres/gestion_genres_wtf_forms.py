@@ -24,15 +24,7 @@ class FormWTFAjouterGenres(FlaskForm):
                                                                  "d'espace à double, de double "
                                                                  "apostrophe, de double trait union")
                                                   ])
-    email_regexp = "^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$"
-    email_wtf = StringField("Clavioter l'adresse mail ",
-                            validators=[Length(min=2, max=50, message="min 2 max 20"),
-                                        Regexp(email_regexp,
-                                               message="N'oubliez pas le @, "
-                                                       "le domaine (gmail,hotmail etc...), "
-                                                       "pas d'espace, "
-                                                       "l'extension (.com, .ch etc...)")
-                                        ])
+
 
     mot_de_passe_regexp = "^([A-Za-z0-9]|[a-zÀ-ÖØ-öø-ÿ])[A-Za-zÀ-ÖØ-öø-ÿ]*['\- ]?[A-Za-zÀ-ÖØ-öø-ÿ]+$"
     mot_de_passe_wtf = StringField("Clavioter le mot de passe ",
@@ -57,15 +49,7 @@ class FormWTFUpdateGenre(FlaskForm):
                                                   Regexp(nom_user_regexp,
                                                          message="pas d'espace")
                                                   ])
-    email_regexp = "^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$"
-    email_update_wtf = StringField("Clavioter l'adresse mail ",
-                            validators=[Length(min=2, max=50, message="min 2 max 50"),
-                                        Regexp(email_regexp,
-                                               message="N'oubliez pas le @, "
-                                                       "le domaine (gmail,hotmail etc...), "
-                                                       "pas d'espace, "
-                                                       "l'extension (.com, .ch etc...)")
-                                        ])
+
     mot_de_passe_regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$"
     mot_de_passe_update_wtf = StringField("Clavioter le mot de passe ",
                                    validators=[Length(min=2, max=20, message="min 2 max 20")

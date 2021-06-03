@@ -18,13 +18,7 @@
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>
-					<p>
-						{{ form_update.email_update_wtf.label }}<br>
-						{{ form_update.email_update_wtf(size=32) }}<br>
-						{% for error in form_update.email_update_wtf.errors %}
-							<span style="color: red;">[{{ error }}]</span>
-						{% endfor %}
-					</p>
+
 					<p>
 						{{ form_update.mot_de_passe_update_wtf.label }}<br>
 						{{ form_update.mot_de_passe_update_wtf(size=32) }}<br>
