@@ -1,5 +1,5 @@
 """
-    Fichier : gestion_genres_crud.py
+    Fichier : gestion_destinataire_crud.py
     Auteur : OM 2021.03.16
     Gestions des "routes" FLASK et des données pour les genres.
 """
@@ -24,9 +24,9 @@ from APP_FILMS.essais_wtf_forms.wtf_forms_demo_select import DemoFormSelectWTF
     
     Paramètres : sans
     
-    But : Effacer(delete) un genre qui a été sélectionné dans le formulaire "genres_afficher.html"
+    But : Effacer(delete) un genre qui a été sélectionné dans le formulaire "destinataire_afficher.html"
     
-    Remarque :  Dans le champ "nom_genre_delete_wtf" du formulaire "genres/genre_delete_wtf.html",
+    Remarque :  Dans le champ "nom_genre_delete_wtf" du formulaire "genres/destinataire_delete_wtf.html",
                 le contrôle de la saisie est désactivée. On doit simplement cliquer sur "DELETE"
 """
 
@@ -35,7 +35,7 @@ from APP_FILMS.essais_wtf_forms.wtf_forms_demo_select import DemoFormSelectWTF
 def demo_select_wtf():
     genre_selectionne = None
     # Objet formulaire pour montrer une liste déroulante basé sur la table "t_user"
-    form_demo = DemoFormSelectWTF()
+    form = DemoFormSelectWTF()
     try:
         if request.method == "POST" and form_demo.submit_btn_ok_dplist_user.data:
 
@@ -47,7 +47,7 @@ def demo_select_wtf():
 
         if request.method == "GET":
             with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
-                strsql_genres_afficher = """SELECT id_user, nom_user FROM t_user ORDER BY id_user"""
+                strsql_genres_afficher = """SELECT id_destinataire, destinataire FROM t_destinataire ORDER BY id_destinataire"""
                 mc_afficher.execute(strsql_genres_afficher)
 
             data_genres = mc_afficher.fetchall()
@@ -60,7 +60,7 @@ def demo_select_wtf():
             """
             genre_val_list_dropdown = []
             for i in data_genres:
-                genre_val_list_dropdown.append(i['intitule_genre'])
+                genre_val_list_dropdown.append(i['destinataire'])
 
             # Aussi possible d'avoir un id numérique et un texte en correspondance
             # genre_val_list_dropdown = [(i["id_genre"], i["intitule_genre"]) for i in data_genres]

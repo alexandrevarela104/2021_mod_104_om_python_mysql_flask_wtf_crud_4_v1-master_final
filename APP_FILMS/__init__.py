@@ -83,7 +83,11 @@ from APP_FILMS.essais_wtf_forms import gestion_essai_wtf
 from APP_FILMS.essais_wtf_forms import gestion_wtf_forms_demo_select
 from APP_FILMS.genres import gestion_genres_crud
 from APP_FILMS.factures import gestion_factures_crud
+from APP_FILMS.destinataires import gestion_destinataires_crud
+from APP_FILMS.motifs import gestion_motif_crud
+from APP_FILMS.emails import gestion_email_crud
 from APP_FILMS.zzzdemos import routes_demos
 
 from APP_FILMS.films_genres import gestion_films_genres_crud
+from APP_FILMS.films_genres import gestion_email_wtf_forms
 from APP_FILMS.erreurs import msg_avertissements

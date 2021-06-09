@@ -21,8 +21,22 @@
 							Montant à payer
                         </th>
                         <th class="align-middle">
+							Reception Facture
+
+                        </th>
+						<th class="align-middle">
+							Destinataire
+                        </th>
+						<th class="align-middle">
+							Motif
+                        </th>
+						<th class="align-middle">
 							délai
                         </th>
+						<th class="align-middle">
+							Payé le
+                        </th>
+
                         <th class="align-middle">
 
                         </th>
@@ -43,7 +57,20 @@
 							{{ row.somme }}
 						</td>
 						<td class="align-middle">
+							{{ row.reception }}
+						</td>
+						<td class="align-middle">
+
+							{{ row.destinataire }}
+						</td>
+						<td class="align-middle">
+							{{ row.motif }}
+						</td>
+						<td class="align-middle">
 							{{ row.delai }}
+						</td>
+						<td class="align-middle">
+							{{ row.payement }}
 						</td>
 						<td class="text-center" class="align-middle">
 							<a class="btn btn-primary" href="{{ url_for('factures_ajouter_wtf') }}" role="button">Ajouter</a>

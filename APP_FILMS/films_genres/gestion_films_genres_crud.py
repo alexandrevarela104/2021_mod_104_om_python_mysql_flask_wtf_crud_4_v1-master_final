@@ -17,6 +17,9 @@ from APP_FILMS import obj_mon_application
 from APP_FILMS.database.connect_db_context_manager import MaBaseDeDonnee
 from APP_FILMS.erreurs.exceptions import *
 from APP_FILMS.erreurs.msg_erreurs import *
+from APP_FILMS.films_genres.gestion_email_wtf_forms import FormWTFAjouterGenres
+from APP_FILMS.films_genres.gestion_email_wtf_forms import FormWTFUpdateGenre
+
 
 """
     Nom : films_genres_afficher
@@ -87,6 +90,79 @@ def films_genres_afficher(id_film_sel):
 
     # Envoie la page "HTML" au serveur.
     return render_template("films_genres/films_genres_afficher.html", data=data_genres_films_afficher)
+
+
+"""
+    Auteur : OM 2021.03.22
+    Définition d'une "route" /genres_ajouter
+
+    Test : ex : http://127.0.0.1:5005/genres_ajouter
+
+    Paramètres : sans
+
+    But : Ajouter un genre pour un film
+
+    Remarque :  Dans le champ "name_genre_html" du formulaire "genres/genres_ajouter.html",
+                le contrôle de la saisie s'effectue ici en Python.
+                On transforme la saisie en minuscules.
+                On ne doit pas accepter des valeurs vides, des valeurs avec des chiffres,
+                des valeurs avec des caractères qui ne sont pas des lettres.
+                Pour comprendre [A-Za-zÀ-ÖØ-öø-ÿ] il faut se reporter à la table ASCII https://www.ascii-code.com/
+                Accepte le trait d'union ou l'apostrophe, et l'espace entre deux mots, mais pas plus d'une occurence.
+"""
+
+
+@obj_mon_application.route("/email_ajouter", methods=['GET', 'POST'])
+def emails_ajouter_wtf():
+    form = FormWTFAjouterGenres()
+    if request.method == "POST":
+        try:
+            try:
+                # Renvoie une erreur si la connexion est perdue.
+                MaBaseDeDonnee().connexion_bd.ping(False)
+            except Exception as erreur:
+                flash(f"Dans Gestion genres ...terrible erreur, il faut connecter une base de donnée", "danger")
+                print(f"Exception grave Classe constructeur GestionGenres {erreur.args[0]}")
+                raise MaBdErreurConnexion(f"{msg_erreurs['ErreurConnexionBD']['message']} {erreur.args[0]}")
+
+            if form.validate_on_submit():
+                email_wtf = form.email_wtf.data
+
+                valeurs_insertion_dictionnaire = {"value_email": email_wtf}
+
+                print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
+
+                strsql_insert_user = """INSERT INTO t_email (id_email,email) VALUES (NULL,%(value_email)s)"""
+                with MaBaseDeDonnee() as mconn_bd:
+                    mconn_bd.mabd_execute(strsql_insert_user, valeurs_insertion_dictionnaire)
+
+                flash(f"Données insérées !!", "success")
+                print(f"Données insérées !!")
+
+                # Pour afficher et constater l'insertion de la valeur, on affiche en ordre inverse. (DESC)
+                return redirect(url_for('films_genres_afficher', order_by='DESC', id_film_sel=0))
+
+        # ATTENTION à l'ordre des excepts, il est très important de respecter l'ordre.
+        except pymysql.err.IntegrityError as erreur_genre_doublon:
+            # Dérive "pymysql.err.IntegrityError" dans "MaBdErreurDoublon" fichier "erreurs/exceptions.py"
+            # Ainsi on peut avoir un message d'erreur personnalisé.
+            code, msg = erreur_genre_doublon.args
+
+            flash(f"{error_codes.get(code, msg)} ", "warning")
+
+        # OM 2020.04.16 ATTENTION à l'ordre des excepts, il est très important de respecter l'ordre.
+        except (pymysql.err.OperationalError,
+                pymysql.ProgrammingError,
+                pymysql.InternalError,
+                TypeError) as erreur_gest_genr_crud:
+            code, msg = erreur_gest_genr_crud.args
+
+            flash(f"{error_codes.get(code, msg)} ", "danger")
+            flash(f"Erreur dans Gestion genres CRUD : {sys.exc_info()[0]} "
+                  f"{erreur_gest_genr_crud.args[0]} , "
+                  f"{erreur_gest_genr_crud}", "danger")
+
+    return render_template("films_genres/emails_ajouter_wtf.html", form=form)
 
 
 """
@@ -194,6 +270,76 @@ def edit_genre_film_selected():
 
     On signale les erreurs importantes
 """
+
+
+@obj_mon_application.route("/email_update", methods=['GET', 'POST'])
+def emails_update_wtf():
+
+    # L'utilisateur vient de cliquer sur le bouton "EDIT". Récupère la valeur de "id_facture"
+    id_email_update = request.values['id_email_btn_edit_html']
+
+    # Objet formulaire pour l'UPDATE
+    form_update = FormWTFUpdateGenre()
+    try:
+        print(" on submit ", form_update.validate_on_submit())
+        if form_update.validate_on_submit():
+            # Récupèrer la valeur du champ depuis "destinataire_update_wtf.html" après avoir cliqué sur "SUBMIT".
+            # Puis la convertir en lettres minuscules.
+            email_update = form_update.email_update_wtf.data
+
+            email_update = email_update.lower()
+
+
+
+            valeur_update_dictionnaire = {"value_id_email": id_email_update, "value_email": email_update,}
+            print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
+
+            str_sql_update_intitulegenre = """UPDATE t_email SET email = %(value_email)s WHERE id_email = %(value_id_email)s"""
+            with MaBaseDeDonnee() as mconn_bd:
+                mconn_bd.mabd_execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
+
+
+
+            flash(f"Donnée mise à jour !!", "success")
+            print(f"Donnée mise à jour !!")
+
+            # afficher et constater que la donnée est mise à jour.
+            # Affiche seulement la valeur modifiée, "ASC" et l'"id_facture_update"
+            return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=id_email_update))
+        elif request.method == "GET":
+            # Opération sur la BD pour récupérer "id_facture" et "numero_facture" de la "t_facture"
+            str_sql_id_facture = "SELECT id_email, email, FROM t_email WHERE id_email = %(value_id_email)s"
+            valeur_select_dictionnaire = {"value_id_facture": id_email_update}
+            mybd_curseur = MaBaseDeDonnee().connexion_bd.cursor()
+            mybd_curseur.execute(str_sql_id_facture, valeur_select_dictionnaire)
+            # Une seule valeur est suffisante "fetchone()", vu qu'il n'y a qu'un seul champ "nom genre" pour l'UPDATE
+            data_nom_genre = mybd_curseur.fetchone()
+            print("data_nom_genre ", data_nom_genre, " type ", type(data_nom_genre), " genre ",
+                  data_nom_genre["email"])
+
+            # Afficher la valeur sélectionnée dans le champ du formulaire "destinataire_update_wtf.html"
+            form_update.numero_facture_update_wtf.data = data_nom_genre["email"]
+
+    # OM 2020.04.16 ATTENTION à l'ordre des excepts, il est très important de respecter l'ordre.
+    except KeyError:
+        flash(f"__KeyError dans facture_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]} {sys.exc_info()[2]}",
+              "danger")
+    except ValueError:
+        flash(f"Erreur dans facture_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]}", "danger")
+    except (pymysql.err.OperationalError,
+            pymysql.ProgrammingError,
+            pymysql.InternalError,
+            pymysql.err.IntegrityError,
+            TypeError) as erreur_gest_genr_crud:
+        code, msg = erreur_gest_genr_crud.args
+        flash(f"attention : {error_codes.get(code, msg)} {erreur_gest_genr_crud} ", "danger")
+        flash(f"Erreur dans facture_update_wtf : {sys.exc_info()[0]} "
+              f"{erreur_gest_genr_crud.args[0]} , "
+              f"{erreur_gest_genr_crud}", "danger")
+        flash(f"__KeyError dans facture_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]} {sys.exc_info()[2]}",
+              "danger")
+
+    return render_template("films_genres/emails_update_wtf.html", form_update=form_update)
 
 
 @obj_mon_application.route("/update_genre_film_selected", methods=['GET', 'POST'])

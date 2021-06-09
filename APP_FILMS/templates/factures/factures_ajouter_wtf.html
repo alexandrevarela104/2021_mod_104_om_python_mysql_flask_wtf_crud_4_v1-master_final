@@ -32,6 +32,31 @@
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>
+						<p>
+						{{ form.payement_wtf.label }}<br>
+						{{ form.payement_wtf(size=32) }}<br>
+						{% for error in form.payement_wtf.errors %}
+							<span style="color: red;">[{{ error }}]</span>
+						{% endfor %}
+					</p>
+
+					<select id="destinataire" name="destinataire" style="height:30px;" required>
+                        <option value="" selected disabled>Choisir un destinataire</option>
+                        {% for row in destinataire %}
+                        <option name="" value="{{row.id_destinataire}}">{{row.destinataire}}</option>
+                        {% endfor %}
+                    </select>
+					<br/>
+					<br/>
+
+					<select id="motif" name="motif" style="height:30px;" required>
+                        <option value="" selected disabled>Choisir un motif</option>
+                        {% for row in motif %}
+                        <option name="" value="{{row.id_motif}}">{{row.motif}}</option>
+                        {% endfor %}
+                    </select>
+
+
 				</div>
 				{{ form.submit(class="btn btn-primary") }}
 			</form>

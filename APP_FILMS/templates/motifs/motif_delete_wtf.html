@@ -5,7 +5,7 @@
 	<div class="row">
 		<div class="col-md-12">
 			<p>
-				Effacer un UTILISATEUR
+				Effacer une FACTURE
 			</p>
 			<form action="" method="POST" novalidate>
 				<!-- Protection contre les attaques Cross-Site Request Forgery (CSRF) -->
@@ -20,7 +20,7 @@
 						<thead>
 							<tr>
 								<th>
-									NUMERO DE LA FACTURE
+									DESTINATAIRES(S)
 								</th>
 							</tr>
 						</thead>
@@ -28,9 +28,8 @@
 							<tbody>
 								<tr>
 									<td>
-										{{ row.numero_facture }}
+										{{ row.motif }}
 									</td>
-
 								</tr>
 							</tbody>
 						{% endfor %}
@@ -40,9 +39,9 @@
 
 				<div class="form-group">
 					<p>
-						{{ form_delete.nom_user_delete_wtf.label }}<br>
-						{{ form_delete.nom_user_delete_wtf(size=32, readonly=true) }}<br>
-						{% for error in form_delete.nom_user_delete_wtf.errors %}
+						{{ form_delete.motif_delete_wtf.label }}<br>
+						{{ form_delete.motif_delete_wtf(size=32, readonly=true) }}<br>
+						{% for error in form_delete.motif_delete_wtf.errors %}
 							<span style="color: red;">[{{ error }}]</span>
 						{% endfor %}
 					</p>

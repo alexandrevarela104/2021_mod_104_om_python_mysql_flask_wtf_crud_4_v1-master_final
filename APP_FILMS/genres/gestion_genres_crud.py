@@ -1,5 +1,5 @@
 """
-    Fichier : gestion_factures_crud.py
+    Fichier : gestion_destinataires_crud.py
     Auteur : OM 2021.03.16
     Gestions des "routes" FLASK et des données pour les genres.
 """
@@ -127,7 +127,6 @@ def genres_ajouter_wtf():
 
             if form.validate_on_submit():
                 nom_user_wtf = form.nom_user_wtf.data
-                email_wtf = form.email_wtf.data
                 mot_de_passe_wtf = form.mot_de_passe_wtf.data
 
                 valeurs_insertion_dictionnaire = {"value_nom_user": nom_user_wtf,
@@ -176,9 +175,9 @@ def genres_ajouter_wtf():
     
     Paramètres : sans
     
-    But : Editer(update) un genre qui a été sélectionné dans le formulaire "factures_afficher.html"
+    But : Editer(update) un genre qui a été sélectionné dans le formulaire "destinataires_afficher.html"
     
-    Remarque :  Dans le champ "nom_user_update_wtf" du formulaire "genres/genre_update_wtf.html",
+    Remarque :  Dans le champ "nom_user_update_wtf" du formulaire "genres/destinataire_update_wtf.html",
                 le contrôle de la saisie s'effectue ici en Python.
                 On transforme la saisie en minuscules.
                 On ne doit pas accepter des valeurs vides, des valeurs avec des chiffres,
@@ -199,14 +198,12 @@ def genre_update_wtf():
     try:
         print(" on submit ", form_update.validate_on_submit())
         if form_update.validate_on_submit():
-            # Récupèrer la valeur du champ depuis "genre_update_wtf.html" après avoir cliqué sur "SUBMIT".
+            # Récupèrer la valeur du champ depuis "destinataire_update_wtf.html" après avoir cliqué sur "SUBMIT".
             # Puis la convertir en lettres minuscules.
             nom_user_update = form_update.nom_user_update_wtf.data
-            email_update = form_update.email_update_wtf.data
             mot_de_passe_update = form_update.mot_de_passe_update_wtf.data
 
             nom_user_update = nom_user_update.lower()
-            email_update = email_update.lower()
             mot_de_passe_update = mot_de_passe_update.lower()
 
 
@@ -240,7 +237,7 @@ def genre_update_wtf():
             print("data_nom_genre ", data_nom_genre, " type ", type(data_nom_genre), " genre ",
                   data_nom_genre["nom_user"])
 
-            # Afficher la valeur sélectionnée dans le champ du formulaire "genre_update_wtf.html"
+            # Afficher la valeur sélectionnée dans le champ du formulaire "destinataire_update_wtf.html"
             form_update.nom_user_update_wtf.data = data_nom_genre["nom_user"]
             form_update.mot_de_passe_update_wtf.data = data_nom_genre["password"]
 
@@ -274,9 +271,9 @@ def genre_update_wtf():
     
     Paramètres : sans
     
-    But : Effacer(delete) un genre qui a été sélectionné dans le formulaire "factures_afficher.html"
+    But : Effacer(delete) un genre qui a été sélectionné dans le formulaire "destinataires_afficher.html"
     
-    Remarque :  Dans le champ "nom_user_delete_wtf" du formulaire "genres/genre_update_wtf.html",
+    Remarque :  Dans le champ "nom_user_delete_wtf" du formulaire "genres/destinataire_update_wtf.html",
                 le contrôle de la saisie est désactivée. On doit simplement cliquer sur "DELETE"
 """
 
@@ -299,7 +296,7 @@ def genre_delete_wtf():
 
             if form_delete.submit_btn_conf_del.data:
                 # Récupère les données afin d'afficher à nouveau
-                # le formulaire "genres/genre_update_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
+                # le formulaire "genres/destinataire_update_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
                 data_films_attribue_genre_delete = session['data_films_attribue_genre_delete']
                 print("data_films_attribue_genre_delete ", data_films_attribue_genre_delete)
 
@@ -312,21 +309,17 @@ def genre_delete_wtf():
                 valeur_delete_dictionnaire = {"value_id_user": id_user_delete}
                 print("valeur_delete_dictionnaire ", valeur_delete_dictionnaire)
 
-                str_sql_delete_destinataire = """DELETE FROM t_destinataire WHERE fk_user = %(value_id_user)s"""
-                str_sql_delete_attente = """DELETE FROM  t_attente WHERE fk_user = %(value_id_user)s"""
-                str_sql_delete_motif = """DELETE FROM  t_motif WHERE fk_user = %(value_id_user)s"""
-                str_sql_delete_payement = """DELETE FROM  t_payement WHERE fk_user = %(value_id_user)s"""
-                str_sql_delete_rappel = """DELETE FROM  t_rappel WHERE fk_user = %(value_id_user)s"""
+
+                str_sql_delete_facture = """DELETE FROM  t_user_facture WHERE fk_user = %(value_id_user)s"""
+                str_sql_delete_user_email = """DELETE FROM  t_user_email WHERE fk_user = %(value_id_user)s"""
 
                 str_sql_delete_idgenre = """DELETE FROM t_user WHERE id_user = %(value_id_user)s"""
                 # Manière brutale d'effacer d'abord la "fk_user", même si elle n'existe pas dans la "t_destinataire"
                 # Ensuite on peut effacer le genre vu qu'il n'est plus "lié" (INNODB) dans la "t_destinataire"
                 with MaBaseDeDonnee() as mconn_bd:
-                    mconn_bd.mabd_execute(str_sql_delete_destinataire, valeur_delete_dictionnaire)
-                    mconn_bd.mabd_execute(str_sql_delete_attente, valeur_delete_dictionnaire)
-                    mconn_bd.mabd_execute(str_sql_delete_motif, valeur_delete_dictionnaire)
-                    mconn_bd.mabd_execute(str_sql_delete_payement, valeur_delete_dictionnaire)
-                    mconn_bd.mabd_execute(str_sql_delete_rappel, valeur_delete_dictionnaire)
+
+                    mconn_bd.mabd_execute(str_sql_delete_user_email, valeur_delete_dictionnaire)
+                    mconn_bd.mabd_execute(str_sql_delete_facture, valeur_delete_dictionnaire)
                     mconn_bd.mabd_execute(str_sql_delete_idgenre, valeur_delete_dictionnaire)
 
 
@@ -341,9 +334,9 @@ def genre_delete_wtf():
             print(id_user_delete, type(id_user_delete))
 
             # Requête qui affiche tous les films qui ont le genre que l'utilisateur veut effacer
-            str_sql_genres_films_delete = """SELECT id_destinataire, destinataire, id_user, nom_user FROM t_destinataire 
-                                            INNER JOIN t_facture ON t_destinataire.fk_facture = t_facture.id_facture
-                                            INNER JOIN t_user ON t_destinataire.fk_user = t_user.id_user
+            str_sql_genres_films_delete = """SELECT id_facture, numero_facture, id_user, nom_user FROM t_user_facture 
+                                            INNER JOIN t_facture ON t_user_facture.fk_facture = t_facture.id_facture
+                                            INNER JOIN t_user ON t_user_facture.fk_user = t_user.id_user
                                             WHERE fk_user = %(value_id_user)s"""
 
             mybd_curseur = MaBaseDeDonnee().connexion_bd.cursor()
@@ -353,7 +346,7 @@ def genre_delete_wtf():
             print("data_films_attribue_genre_delete...", data_films_attribue_genre_delete)
 
             # Nécessaire pour mémoriser les données afin d'afficher à nouveau
-            # le formulaire "genres/genre_update_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
+            # le formulaire "genres/destinataire_update_wtf.html" lorsque le bouton "Etes-vous sur d'effacer ?" est cliqué.
             session['data_films_attribue_genre_delete'] = data_films_attribue_genre_delete
 
             # Opération sur la BD pour récupérer "id_user" et "nom_user" de la "t_user"
@@ -366,11 +359,11 @@ def genre_delete_wtf():
             print("data_nom_genre ", data_nom_genre, " type ", type(data_nom_genre), " genre ",
                   data_nom_genre["nom_user"])
 
-            # Afficher la valeur sélectionnée dans le champ du formulaire "genre_update_wtf.html"
+            # Afficher la valeur sélectionnée dans le champ du formulaire "destinataire_update_wtf.html"
             form_delete.nom_user_delete_wtf.data = data_nom_genre["nom_user"]
 
 
-            # Le bouton pour l'action "DELETE" dans le form. "genre_update_wtf.html" est caché.
+            # Le bouton pour l'action "DELETE" dans le form. "destinataire_update_wtf.html" est caché.
             btn_submit_del = False
 
     # OM 2020.04.16 ATTENTION à l'ordre des excepts, il est très important de respecter l'ordre.
