@@ -17,20 +17,18 @@ class FormWTFAjouterGenres(FlaskForm):
     """
     nom_user_regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$"
     nom_user_wtf = StringField("Clavioter le nom d'utilisateur ",
-                                      validators=[Length(min=2, max=20, message="min 2 max 20"),
-                                                  Regexp(nom_user_regexp,
-                                                         message="Pas de chiffres, de caractères "
-                                                                 "spéciaux, "
-                                                                 "d'espace à double, de double "
-                                                                 "apostrophe, de double trait union")
+                               validators=[Length(min=2, max=30, message="min 2 max 30"),
+                                           Regexp(nom_user_regexp,
+                                                  message="pas d'espace")
+
                                                   ])
 
 
-    mot_de_passe_regexp = "^([A-Za-z0-9]|[a-zÀ-ÖØ-öø-ÿ])[A-Za-zÀ-ÖØ-öø-ÿ]*['\- ]?[A-Za-zÀ-ÖØ-öø-ÿ]+$"
+    mot_de_passe_regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$"
     mot_de_passe_wtf = StringField("Clavioter le mot de passe ",
-                                   validators=[Length(min=2, max=20, message="min 2 max 20"),
+                                   validators=[Length(min=2, max=30, message="min 2 max 30"),
                                                Regexp(mot_de_passe_regexp,
-                                                      message="Pas de chiffres, de caractères "
+                                                      message=
                                                               "spéciaux, "
                                                               "d'espace à double, de double "
                                                               "apostrophe, de double trait union")
@@ -45,14 +43,14 @@ class FormWTFUpdateGenre(FlaskForm):
     """
     nom_user_regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$"
     nom_user_update_wtf = StringField("Clavioter le nom d'utilisateur ",
-                                      validators=[Length(min=2, max=20, message="min 2 max 20"),
+                                      validators=[Length(min=2, max=30, message="min 2 max 20"),
                                                   Regexp(nom_user_regexp,
                                                          message="pas d'espace")
                                                   ])
 
     mot_de_passe_regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[a-zA-Z0-9]$"
     mot_de_passe_update_wtf = StringField("Clavioter le mot de passe ",
-                                   validators=[Length(min=2, max=20, message="min 2 max 20")
+                                   validators=[Length(min=2, max=30, message="min 2 max 20")
                                                ])
     submit = SubmitField("Enregistrer genre")
 

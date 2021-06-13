@@ -90,4 +90,6 @@ from APP_FILMS.zzzdemos import routes_demos
 
 from APP_FILMS.films_genres import gestion_films_genres_crud
 from APP_FILMS.films_genres import gestion_email_wtf_forms
+from APP_FILMS.factures_user import gestion_factures_user_crud
+from APP_FILMS.factures_user import gestion_facture_wtf_forms
 from APP_FILMS.erreurs import msg_avertissements

@@ -19,9 +19,9 @@ class FormWTFAjouterGenres(FlaskForm):
     """
     destinataire_regexp = "^[A-Za-z0-9 ]*[A-Za-z0-9][A-Za-z0-9 ]*$"
     destinataires_wtf = StringField("Clavioter le destinataire de votre facture ",
-                                            validators=[Length(min=2, max=80, message="min 2 max 20"),
+                                            validators=[Length(min=2, max=60, message="min 2 max 60"),
                                                         Regexp(destinataire_regexp,
-                                                               message="pas d'espace")
+                                                               message="Ne mettez pas de ponctuation:?, ., :, ' etc")
                                                         ])
 
 

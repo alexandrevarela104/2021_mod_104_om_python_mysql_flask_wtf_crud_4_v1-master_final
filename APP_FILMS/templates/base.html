@@ -35,7 +35,7 @@
 <div class="container">
 	<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-secondary">
 		<div class="container-fluid">
-			<a class="navbar-brand" href="{{ url_for('mapagepricipale') }}">MOD 104 OM EPSIC</a>
+			<a class="navbar-brand" href="{{ url_for('mapagepricipale') }}">Gestionnaire de factures</a>
 			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
@@ -56,6 +56,10 @@
 					<li class="nav-item">
 						<!--		Afficher la liste des genres dans l'ordre (ASC) et tous les genres (0)-->
 						<a class="nav-link" href="{{ url_for('motifs_afficher', order_by='ASC', id_genre_sel=0) }}">Motif</a>
+					</li>
+					<li class="nav-item">
+						<!--		Afficher de tous les films (0)-->
+						<a class="nav-link" href="{{ url_for('factures_user_afficher', id_film_sel=0) }}">Utilisatuers/Factures</a>
 					</li>
 
 					<li class="nav-item">

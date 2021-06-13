@@ -17,14 +17,14 @@ from APP_FILMS import obj_mon_application
 from APP_FILMS.database.connect_db_context_manager import MaBaseDeDonnee
 from APP_FILMS.erreurs.exceptions import *
 from APP_FILMS.erreurs.msg_erreurs import *
-from APP_FILMS.films_genres.gestion_email_wtf_forms import FormWTFAjouterGenres
-from APP_FILMS.films_genres.gestion_email_wtf_forms import FormWTFUpdateGenre
+from APP_FILMS.factures_user.gestion_facture_wtf_forms import FormWTFAjouterGenres
+from APP_FILMS.factures_user.gestion_facture_wtf_forms import FormWTFUpdateGenre
 
 
 """
-    Nom : films_genres_afficher
+    Nom : factures_user_afficher
     Auteur : OM 2021.05.01
-    Définition d'une "route" /films_genres_afficher
+    Définition d'une "route" /factures_user_afficher
 
     But : Afficher les films avec les genres associés pour chaque film.
 
@@ -34,26 +34,26 @@ from APP_FILMS.films_genres.gestion_email_wtf_forms import FormWTFUpdateGenre
 """
 
 
-@obj_mon_application.route("/films_genres_afficher/<int:id_film_sel>", methods=['GET', 'POST'])
-def films_genres_afficher(id_film_sel):
+@obj_mon_application.route("/factures_user_afficher/<int:id_film_sel>", methods=['GET', 'POST'])
+def factures_user_afficher(id_film_sel):
     if request.method == "GET":
         try:
             try:
                 # Renvoie une erreur si la connexion est perdue.
                 MaBaseDeDonnee().connexion_bd.ping(False)
-            except Exception as Exception_init_films_genres_afficher:
-                code, msg = Exception_init_films_genres_afficher.args
+            except Exception as Exception_init_factures_user_afficher:
+                code, msg = Exception_init_factures_user_afficher.args
                 flash(f"{error_codes.get(code, msg)} ", "danger")
-                flash(f"Exception _init_films_genres_afficher problème de connexion BD : {sys.exc_info()[0]} "
-                      f"{Exception_init_films_genres_afficher.args[0]} , "
-                      f"{Exception_init_films_genres_afficher}", "danger")
+                flash(f"Exception _init_factures_user_afficher problème de connexion BD : {sys.exc_info()[0]} "
+                      f"{Exception_init_factures_user_afficher.args[0]} , "
+                      f"{Exception_init_factures_user_afficher}", "danger")
                 raise MaBdErreurConnexion(f"{msg_erreurs['ErreurConnexionBD']['message']} {erreur.args[0]}")
 
             with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
                 strsql_genres_films_afficher_data = """SELECT id_user , nom_user,
-                                                               GROUP_CONCAT(email) as GenresFilms FROM t_user_email
-                                                               RIGHT JOIN t_user ON t_user.id_user = t_user_email.fk_user
-                                                               LEFT JOIN t_email ON t_email.id_email = t_user_email.fk_email
+                                                               GROUP_CONCAT(numero_facture) as GenresFilms FROM t_user_facture
+                                                               RIGHT JOIN t_user ON t_user.id_user = t_user_facture.fk_user
+                                                               LEFT JOIN t_facture ON t_facture.id_facture = t_user_facture.fk_facture
                                                               GROUP BY id_user"""
                 if id_film_sel == 0:
                     # le paramètre 0 permet d'afficher tous les films
@@ -81,15 +81,15 @@ def films_genres_afficher(id_film_sel):
                 else:
                     flash(f"Données films et genres affichés !!", "success")
 
-        except Exception as Exception_films_genres_afficher:
-            code, msg = Exception_films_genres_afficher.args
+        except Exception as Exception_factures_user_afficher:
+            code, msg = Exception_factures_user_afficher.args
             flash(f"{error_codes.get(code, msg)} ", "danger")
-            flash(f"Exception films_genres_afficher : {sys.exc_info()[0]} "
-                  f"{Exception_films_genres_afficher.args[0]} , "
-                  f"{Exception_films_genres_afficher}", "danger")
+            flash(f"Exception factures_user_afficher : {sys.exc_info()[0]} "
+                  f"{Exception_factures_user_afficher.args[0]} , "
+                  f"{Exception_factures_user_afficher}", "danger")
 
     # Envoie la page "HTML" au serveur.
-    return render_template("films_genres/films_genres_afficher.html", data=data_genres_films_afficher)
+    return render_template("factures_user/factures_user_afficher.html", data=data_genres_films_afficher)
 
 
 """
@@ -112,8 +112,8 @@ def films_genres_afficher(id_film_sel):
 """
 
 
-@obj_mon_application.route("/email_ajouter", methods=['GET', 'POST'])
-def emails_ajouter_wtf():
+@obj_mon_application.route("/facture_ajouter", methods=['GET', 'POST'])
+def facture_ajouter_wtf():
     form = FormWTFAjouterGenres()
     if request.method == "POST":
         try:
@@ -126,13 +126,13 @@ def emails_ajouter_wtf():
                 raise MaBdErreurConnexion(f"{msg_erreurs['ErreurConnexionBD']['message']} {erreur.args[0]}")
 
             if form.validate_on_submit():
-                email_wtf = form.email_wtf.data
+                facture_wtf = form.facture_wtf.data
 
-                valeurs_insertion_dictionnaire = {"value_email": email_wtf}
+                valeurs_insertion_dictionnaire = {"value_email": facture_wtf}
 
                 print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
 
-                strsql_insert_user = """INSERT INTO t_email (id_email,email) VALUES (NULL,%(value_email)s)"""
+                strsql_insert_user = """INSERT INTO t_facture (id_facture,numero_facture) VALUES (NULL,%(value_email)s)"""
                 with MaBaseDeDonnee() as mconn_bd:
                     mconn_bd.mabd_execute(strsql_insert_user, valeurs_insertion_dictionnaire)
 
@@ -140,7 +140,7 @@ def emails_ajouter_wtf():
                 print(f"Données insérées !!")
 
                 # Pour afficher et constater l'insertion de la valeur, on affiche en ordre inverse. (DESC)
-                return redirect(url_for('films_genres_afficher', order_by='DESC', id_film_sel=0))
+                return redirect(url_for('factures_user_afficher', order_by='DESC', id_film_sel=0))
 
         # ATTENTION à l'ordre des excepts, il est très important de respecter l'ordre.
         except pymysql.err.IntegrityError as erreur_genre_doublon:
@@ -162,11 +162,11 @@ def emails_ajouter_wtf():
                   f"{erreur_gest_genr_crud.args[0]} , "
                   f"{erreur_gest_genr_crud}", "danger")
 
-    return render_template("films_genres/emails_ajouter_wtf.html", form=form)
+    return render_template("factures_user/facture_ajouter_wtf.html", form=form)
 
 
 """
-    nom: edit_genre_film_selected
+    nom: edit_factures_user_selected
     On obtient un objet "objet_dumpbd"
 
     Récupère la liste de tous les genres du film sélectionné par le bouton "MODIFIER" de "factures_user_afficher.html"
@@ -181,20 +181,20 @@ def emails_ajouter_wtf():
 """
 
 
-@obj_mon_application.route("/edit_genre_film_selected", methods=['GET', 'POST'])
-def edit_genre_film_selected():
+@obj_mon_application.route("/edit_factures_user_selected", methods=['GET', 'POST'])
+def edit_factures_user_selected():
     if request.method == "GET":
         try:
             with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
-                strsql_genres_afficher = """SELECT id_email, email FROM t_email ORDER BY id_email ASC"""
+                strsql_genres_afficher = """SELECT id_facture, numero_facture FROM t_facture ORDER BY id_facture ASC"""
                 mc_afficher.execute(strsql_genres_afficher)
             data_genres_all = mc_afficher.fetchall()
-            print("dans edit_genre_film_selected ---> data_genres_all", data_genres_all)
+            print("dans edit_factures_user_selected ---> data_genres_all", data_genres_all)
 
             # Récupère la valeur de "id_film" du formulaire html "factures_user_afficher.html"
             # l'utilisateur clique sur le bouton "Modifier" et on récupère la valeur de "id_film"
             # grâce à la variable "id_film_genres_edit_html" dans le fichier "factures_user_afficher.html"
-            # href="{{ url_for('edit_genre_film_selected', id_film_genres_edit_html=row.id_film) }}"
+            # href="{{ url_for('edit_factures_user_selected', id_film_genres_edit_html=row.id_film) }}"
             id_film_genres_edit = request.values['id_film_genres_edit_html']
 
             # Mémorise l'id du film dans une variable de session
@@ -220,14 +220,14 @@ def edit_genre_film_selected():
 
             # Dans le composant "tags-selector-tagselect" on doit connaître
             # les genres qui ne sont pas encore sélectionnés.
-            lst_data_genres_films_non_attribues = [item['id_email'] for item in data_genres_films_non_attribues]
+            lst_data_genres_films_non_attribues = [item['id_facture'] for item in data_genres_films_non_attribues]
             session['session_lst_data_genres_films_non_attribues'] = lst_data_genres_films_non_attribues
             print("lst_data_genres_films_non_attribues  ", lst_data_genres_films_non_attribues,
                   type(lst_data_genres_films_non_attribues))
 
             # Dans le composant "tags-selector-tagselect" on doit connaître
             # les genres qui sont déjà sélectionnés.
-            lst_data_genres_films_old_attribues = [item['id_email'] for item in data_genres_films_attribues]
+            lst_data_genres_films_old_attribues = [item['id_facture'] for item in data_genres_films_attribues]
             session['session_lst_data_genres_films_old_attribues'] = lst_data_genres_films_old_attribues
             print("lst_data_genres_films_old_attribues  ", lst_data_genres_films_old_attribues,
                   type(lst_data_genres_films_old_attribues))
@@ -240,18 +240,18 @@ def edit_genre_film_selected():
 
             # Extrait les valeurs contenues dans la table "t_genres", colonne "intitule_genre"
             # Le composant javascript "tagify" pour afficher les tags n'a pas besoin de l'id_genre
-            lst_data_genres_films_non_attribues = [item['email'] for item in data_genres_films_non_attribues]
-            print("lst_all_genres gf_edit_genre_film_selected ", lst_data_genres_films_non_attribues,
+            lst_data_genres_films_non_attribues = [item['numero_facture'] for item in data_genres_films_non_attribues]
+            print("lst_all_genres gf_edit_factures_user_selected ", lst_data_genres_films_non_attribues,
                   type(lst_data_genres_films_non_attribues))
 
-        except Exception as Exception_edit_genre_film_selected:
-            code, msg = Exception_edit_genre_film_selected.args
+        except Exception as Exception_edit_factures_user_selected:
+            code, msg = Exception_edit_factures_user_selected.args
             flash(f"{error_codes.get(code, msg)} ", "danger")
-            flash(f"Exception edit_genre_film_selected : {sys.exc_info()[0]} "
-                  f"{Exception_edit_genre_film_selected.args[0]} , "
-                  f"{Exception_edit_genre_film_selected}", "danger")
+            flash(f"Exception edit_factures_user_selected : {sys.exc_info()[0]} "
+                  f"{Exception_edit_factures_user_selected.args[0]} , "
+                  f"{Exception_edit_factures_user_selected}", "danger")
 
-    return render_template("films_genres/films_genres_modifier_tags_dropbox.html",
+    return render_template("factures_user/factures_user_modifier_tags_dropbox.html",
                            data_genres=data_genres_all,
                            data_film_selected=data_genre_film_selected,
                            data_genres_attribues=data_genres_films_attribues,
@@ -259,7 +259,7 @@ def edit_genre_film_selected():
 
 
 """
-    nom: update_genre_film_selected
+    nom: update_factures_user_selected
 
     Récupère la liste de tous les genres du film sélectionné par le bouton "MODIFIER" de "factures_user_afficher.html"
 
@@ -272,11 +272,11 @@ def edit_genre_film_selected():
 """
 
 
-@obj_mon_application.route("/email_update", methods=['GET', 'POST'])
-def emails_update_wtf():
+@obj_mon_application.route("/facture_update", methods=['GET', 'POST'])
+def factures_user_update_wtf():
 
     # L'utilisateur vient de cliquer sur le bouton "EDIT". Récupère la valeur de "id_facture"
-    id_email_update = request.values['id_email_btn_edit_html']
+    id_facture_update = request.values['id_facture_btn_edit_html']
 
     # Objet formulaire pour l'UPDATE
     form_update = FormWTFUpdateGenre()
@@ -285,16 +285,16 @@ def emails_update_wtf():
         if form_update.validate_on_submit():
             # Récupèrer la valeur du champ depuis "destinataire_update_wtf.html" après avoir cliqué sur "SUBMIT".
             # Puis la convertir en lettres minuscules.
-            email_update = form_update.email_update_wtf.data
+            facture_update = form_update.factures_user_update_wtf.data
 
-            email_update = email_update.lower()
+            facture_update = facture_update.lower()
 
 
 
-            valeur_update_dictionnaire = {"value_id_email": id_email_update, "value_email": email_update,}
+            valeur_update_dictionnaire = {"value_id_facture": id_facture_update, "value_email": facture_update,}
             print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
 
-            str_sql_update_intitulegenre = """UPDATE t_email SET email = %(value_email)s WHERE id_email = %(value_id_email)s"""
+            str_sql_update_intitulegenre = """UPDATE t_facture SET numero_facture = %(value_email)s WHERE id_facture = %(value_id_facture)s"""
             with MaBaseDeDonnee() as mconn_bd:
                 mconn_bd.mabd_execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
 
@@ -305,27 +305,27 @@ def emails_update_wtf():
 
             # afficher et constater que la donnée est mise à jour.
             # Affiche seulement la valeur modifiée, "ASC" et l'"id_facture_update"
-            return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=id_email_update))
+            return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=id_facture_update))
         elif request.method == "GET":
             # Opération sur la BD pour récupérer "id_facture" et "numero_facture" de la "t_facture"
-            str_sql_id_facture = "SELECT id_email, email, FROM t_email WHERE id_email = %(value_id_email)s"
-            valeur_select_dictionnaire = {"value_id_facture": id_email_update}
+            str_sql_id_facture = "SELECT id_facture, numero_facture, FROM t_facture WHERE id_facture = %(value_id_facture)s"
+            valeur_select_dictionnaire = {"value_id_facture": id_facture_update}
             mybd_curseur = MaBaseDeDonnee().connexion_bd.cursor()
             mybd_curseur.execute(str_sql_id_facture, valeur_select_dictionnaire)
             # Une seule valeur est suffisante "fetchone()", vu qu'il n'y a qu'un seul champ "nom genre" pour l'UPDATE
             data_nom_genre = mybd_curseur.fetchone()
             print("data_nom_genre ", data_nom_genre, " type ", type(data_nom_genre), " genre ",
-                  data_nom_genre["email"])
+                  data_nom_genre["numero_facture"])
 
             # Afficher la valeur sélectionnée dans le champ du formulaire "destinataire_update_wtf.html"
-            form_update.numero_facture_update_wtf.data = data_nom_genre["email"]
+            form_update.numero_factures_user_update_wtf.data = data_nom_genre["email"]
 
     # OM 2020.04.16 ATTENTION à l'ordre des excepts, il est très important de respecter l'ordre.
     except KeyError:
-        flash(f"__KeyError dans facture_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]} {sys.exc_info()[2]}",
+        flash(f"__KeyError dans factures_user_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]} {sys.exc_info()[2]}",
               "danger")
     except ValueError:
-        flash(f"Erreur dans facture_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]}", "danger")
+        flash(f"Erreur dans factures_user_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]}", "danger")
     except (pymysql.err.OperationalError,
             pymysql.ProgrammingError,
             pymysql.InternalError,
@@ -333,17 +333,17 @@ def emails_update_wtf():
             TypeError) as erreur_gest_genr_crud:
         code, msg = erreur_gest_genr_crud.args
         flash(f"attention : {error_codes.get(code, msg)} {erreur_gest_genr_crud} ", "danger")
-        flash(f"Erreur dans facture_update_wtf : {sys.exc_info()[0]} "
+        flash(f"Erreur dans factures_user_update_wtf : {sys.exc_info()[0]} "
               f"{erreur_gest_genr_crud.args[0]} , "
               f"{erreur_gest_genr_crud}", "danger")
-        flash(f"__KeyError dans facture_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]} {sys.exc_info()[2]}",
+        flash(f"__KeyError dans factures_user_update_wtf : {sys.exc_info()[0]} {sys.exc_info()[1]} {sys.exc_info()[2]}",
               "danger")
 
-    return render_template("films_genres/emails_update_wtf.html", form_update=form_update)
+    return render_template("factures_user/factures_user_update_wtf.html", form_update=form_update)
 
 
-@obj_mon_application.route("/update_genre_film_selected", methods=['GET', 'POST'])
-def update_genre_film_selected():
+@obj_mon_application.route("/update_factures_user_selected", methods=['GET', 'POST'])
+def update_factures_user_selected():
     if request.method == "POST":
         try:
             # Récupère l'id du film sélectionné
@@ -386,11 +386,11 @@ def update_genre_film_selected():
 
             # SQL pour insérer une nouvelle association entre
             # "fk_film"/"id_film" et "fk_genre"/"id_genre" dans la "t_genre_film"
-            strsql_insert_genre_film = """INSERT INTO t_user_email (id_user_email, fk_email, fk_user)
-                                                    VALUES (NULL, %(value_fk_email)s, %(value_fk_user)s)"""
+            strsql_insert_genre_film = """INSERT INTO t_user_facture (id_user_facture, fk_facture, fk_user)
+                                                    VALUES (NULL, %(value_fk_facture)s, %(value_fk_user)s)"""
 
             # SQL pour effacer une (des) association(s) existantes entre "id_film" et "id_genre" dans la "t_genre_film"
-            strsql_delete_genre_film = """DELETE FROM t_user_email WHERE fk_email = %(value_fk_email)s AND fk_user = %(value_fk_user)s"""
+            strsql_delete_genre_film = """DELETE FROM t_user_facture WHERE fk_facture = %(value_fk_facture)s AND fk_user = %(value_fk_user)s"""
 
             with MaBaseDeDonnee() as mconn_bd:
                 # Pour le film sélectionné, parcourir la liste des genres à INSÉRER dans la "t_genre_film".
@@ -399,7 +399,7 @@ def update_genre_film_selected():
                     # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
                     # et "id_genre_ins" (l'id du genre dans la liste) associé à une variable.
                     valeurs_film_sel_genre_sel_dictionnaire = {"value_fk_user": id_film_selected,
-                                                               "value_fk_email": id_genre_ins}
+                                                               "value_fk_facture": id_genre_ins}
 
                     mconn_bd.mabd_execute(strsql_insert_genre_film, valeurs_film_sel_genre_sel_dictionnaire)
 
@@ -409,7 +409,7 @@ def update_genre_film_selected():
                     # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
                     # et "id_genre_del" (l'id du genre dans la liste) associé à une variable.
                     valeurs_film_sel_genre_sel_dictionnaire = {"value_fk_user": id_film_selected,
-                                                               "value_fk_email": id_genre_del}
+                                                               "value_fk_facture": id_genre_del}
 
                     # Du fait de l'utilisation des "context managers" on accède au curseur grâce au "with".
                     # la subtilité consiste à avoir une méthode "mabd_execute" dans la classe "MaBaseDeDonnee"
@@ -417,16 +417,16 @@ def update_genre_film_selected():
                     # sera interprété, ainsi on fera automatiquement un commit
                     mconn_bd.mabd_execute(strsql_delete_genre_film, valeurs_film_sel_genre_sel_dictionnaire)
 
-        except Exception as Exception_update_genre_film_selected:
-            code, msg = Exception_update_genre_film_selected.args
+        except Exception as Exception_update_factures_user_selected:
+            code, msg = Exception_update_factures_user_selected.args
             flash(f"{error_codes.get(code, msg)} ", "danger")
-            flash(f"Exception update_genre_film_selected : {sys.exc_info()[0]} "
-                  f"{Exception_update_genre_film_selected.args[0]} , "
-                  f"{Exception_update_genre_film_selected}", "danger")
+            flash(f"Exception update_factures_user_selected : {sys.exc_info()[0]} "
+                  f"{Exception_update_factures_user_selected.args[0]} , "
+                  f"{Exception_update_factures_user_selected}", "danger")
 
     # Après cette mise à jour de la table intermédiaire "t_genre_film",
     # on affiche les films et le(urs) genre(s) associé(s).
-    return redirect(url_for('films_genres_afficher', id_film_sel=id_film_selected))
+    return redirect(url_for('factures_user_afficher', id_film_sel=id_film_selected))
 
 
 """
@@ -443,19 +443,19 @@ def genres_films_afficher_data(valeur_id_film_selected_dict):
     print("valeur_id_film_selected_dict...", valeur_id_film_selected_dict)
     try:
 
-        strsql_film_selected = """SELECT id_user, nom_user, GROUP_CONCAT(id_email) as GenresFilms FROM t_user_email
-                                        INNER JOIN t_user ON t_user.id_user = t_user_email.fk_user
-                                        INNER JOIN t_email ON t_email.id_email = t_user_email.fk_email
+        strsql_film_selected = """SELECT id_user, nom_user, GROUP_CONCAT(id_facture) as GenresFilms FROM t_user_facture
+                                        INNER JOIN t_user ON t_user.id_user = t_user_facture.fk_user
+                                        INNER JOIN t_facture ON t_facture.id_facture = t_user_facture.fk_facture
                                         WHERE id_user = %(value_id_film_selected)s"""
 
-        strsql_genres_films_non_attribues = """SELECT id_email, email FROM t_email WHERE id_email not in(SELECT id_email as idGenresFilms FROM t_user_email
-                                                    INNER JOIN t_user ON t_user.id_user = t_user_email.fk_user
-                                                     INNER JOIN t_email ON t_email.id_email = t_user_email.fk_email
+        strsql_genres_films_non_attribues = """SELECT id_facture, numero_facture FROM t_facture WHERE id_facture not in(SELECT id_facture as idGenresFilms FROM t_user_facture
+                                                    INNER JOIN t_user ON t_user.id_user = t_user_facture.fk_user
+                                                     INNER JOIN t_facture ON t_facture.id_facture = t_user_facture.fk_facture
                                                     WHERE id_user = %(value_id_film_selected)s)"""
 
-        strsql_genres_films_attribues = """SELECT id_user,id_email, email FROM t_user_email
-											INNER JOIN t_user ON t_user.id_user = t_user_email.fk_user
-                                            INNER JOIN t_email ON t_email.id_email = t_user_email.fk_email
+        strsql_genres_films_attribues = """SELECT id_user,id_facture, numero_facture FROM t_user_facture
+											INNER JOIN t_user ON t_user.id_user = t_user_facture.fk_user
+                                            INNER JOIN t_facture ON t_facture.id_facture = t_user_facture.fk_facture
                                             WHERE id_user = %(value_id_film_selected)s"""
 
         # Du fait de l'utilisation des "context managers" on accède au curseur grâce au "with".

@@ -334,10 +334,10 @@ def motif_delete():
             print(id_motif_delete, type(id_motif_delete))
 
             # Requête qui affiche tous les films qui ont le genre que l'utilisateur veut effacer
-            str_sql_genres_films_delete = """SELECT id_motif, motif, id_facture, numero_facture FROM t_avoir_motif
-                                            INNER JOIN t_motif ON t_avoir_motif.fk_motif = t_motif.id_motif 
+            str_sql_genres_films_delete = """SELECT id_facture, numero_facture, id_motif, motif FROM t_avoir_motif 
                                             INNER JOIN t_facture ON t_avoir_motif.fk_facture = t_facture.id_facture
-                                            WHERE fk_motif = %(value_id_motif)s"""
+                                            INNER JOIN t_motif ON t_avoir_motif.fk_motif = t_motif.id_motif
+                                            WHERE fk_motif =   %(value_id_motif)s"""
 
             mybd_curseur = MaBaseDeDonnee().connexion_bd.cursor()
 

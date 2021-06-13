@@ -51,7 +51,7 @@ msg_erreurs = {
     But : Personnaliser le texte des erreurs originales.
 """
 error_codes = {
-    ER.DUP_ENTRY: "Ben cette valeur, elle existe déjà.",
+    ER.DUP_ENTRY: "La valeur que vous essayez d'entrer existe déjà elle existe déjà.",
     ER.PARSE_ERROR: "Ooouh là une très vilaine erreur de syntaxe en MySql.",
     ER.BAD_FIELD_ERROR: "La colonne de la table n'existe pas.",
     ER.NO_SUCH_TABLE: "La table n'existe pas."

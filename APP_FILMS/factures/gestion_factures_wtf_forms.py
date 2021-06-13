@@ -18,25 +18,21 @@ class FormWTFAjouterGenres(FlaskForm):
         Définition d'un "bouton" submit avec un libellé personnalisé.
     """
     numero_facture_regexp = "^-?[0-9][0-9,\.]+$"
-    numero_facture_wtf = StringField("Clavioter le numero de votre facture ",
-                                            validators=[Length(min=2, max=20, message="min 2 max 20"),
+    numero_facture_wtf = StringField("Clavioter le numero de votre facture, Vous ne pourrez pas ajouter un numéro de facture qui existe déjà ",
+                                            validators=[Length(min=2, max=11, message="min 2 max 11"),
                                                         Regexp(numero_facture_regexp,
-                                                               message="pas d'espace")
+                                                               message="Veuillez entrer un numéro de facture correct")
                                                         ])
     somme_regexp = "^-?[0-9][0-9,\.]+$"
     somme_wtf = StringField("Clavioter le montant de la facture ",
-                                   validators=[Length(min=2, max=50, message="min 2 max 20"),
+                                   validators=[Length(min=2, max=50, message="min 2 max 50"),
                                                Regexp(somme_regexp,
-                                                      message="N'oubliez pas le @, "
-                                                              "le domaine (gmail,hotmail etc...), "
-                                                              "pas d'espace, "
-                                                              "l'extension (.com, .ch etc...)")
+                                                      message="Veuillez entrer une somme correcte")
                                                ])
     delai_regexp = "^-?[0-9][0-9,\.]+$"
     delai_wtf = DateField("Clavioter le jour du délai de payement", format="%Y-%m-%d")
 
-    payement_wtf = DateField("Clavioter le jour de payement",format="%Y-%m-%d")
-
+    payement_wtf = DateField("Clavioter la date de payement. ",  format="%Y-%m-%d")
 
     submit = SubmitField("Enregistrer genre")
 
@@ -50,7 +46,7 @@ class FormWTFUpdateGenre(FlaskForm):
     numero_facture_update_wtf = StringField("Clavioter le numero de votre facture ",
                                       validators=[Length(min=2, max=20, message="min 2 max 20"),
                                                   Regexp(numero_facture_regexp,
-                                                         message="pas d'espace")
+                                                         message="pas d'espace",)
                                                   ])
     somme_regexp = "^-?[0-9][0-9,\.]+$"
     somme_update_wtf = StringField("Clavioter le montant de la facture ",
@@ -62,11 +58,11 @@ class FormWTFUpdateGenre(FlaskForm):
                                                        "l'extension (.com, .ch etc...)")
                                         ])
     delai_regexp = "^-?[0-9][0-9,\.]+$"
-    delai_update_wtf = StringField("Clavioter le delai ",
+    delai_update_wtf = StringField("Clavioter le delai. Exemple = yyyy-mm-dd ",
                                    validators=[Length(min=2, max=20, message="min 2 max 20")
                                                ])
     payement_regexp = "^-?[0-9][0-9,\.]+$"
-    payement_update_wtf = StringField("Clavioter la date de payement ",
+    payement_update_wtf = StringField("Clavioter la date de payement. Exemple = yyyy-mm-dd",
                                    validators=[Length(min=2, max=20, message="min 2 max 20")
                                                ])
     submit = SubmitField("Enregistrer genre")

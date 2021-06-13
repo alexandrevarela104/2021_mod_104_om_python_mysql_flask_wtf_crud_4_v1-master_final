@@ -41,8 +41,7 @@
 					</p>
 
 					<select id="destinataire" name="destinataire" style="height:30px;" required>
-                        <option value="" selected disabled>Choisir un destinataire</option>
-                        {% for row in destinataire %}
+                        {% for row in destinataire%}
                         <option name="" value="{{row.id_destinataire}}">{{row.destinataire}}</option>
                         {% endfor %}
                     </select>
@@ -50,8 +49,7 @@
 					<br/>
 
 					<select id="motif" name="motif" style="height:30px;" required>
-                        <option value="" selected disabled>Choisir un motif</option>
-                        {% for row in motif %}
+                        {% for row in motif%}
                         <option name="" value="{{row.id_motif}}">{{row.motif}}</option>
                         {% endfor %}
                     </select>

@@ -353,10 +353,10 @@ def email_delete():
             # vu qu'il n'y a qu'un seul champ "nom genre" pour l'action DELETE
             data_nom_genre = mybd_curseur.fetchone()
             print("data_nom_genre ", data_nom_genre, " type ", type(data_nom_genre), " genre ",
-                  data_nom_genre["motif"])
+                  data_nom_genre["email"])
 
             # Afficher la valeur sélectionnée dans le champ du formulaire "destinataire_delete_wtf.html"
-            form_delete.email_delete_wtf.data = data_nom_genre["motif"]
+            form_delete.email_delete_wtf.data = data_nom_genre["email"]
 
 
             # Le bouton pour l'action "DELETE" dans le form. "destinataire_delete_wtf.html" est caché.

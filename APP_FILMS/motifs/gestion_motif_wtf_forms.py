@@ -19,9 +19,9 @@ class FormWTFAjouterGenres(FlaskForm):
     """
     motif_regexp = "^[A-Za-z0-9 ]*[A-Za-z0-9][A-Za-z0-9 ]*$"
     motif_wtf = StringField("Clavioter le numero de votre facture ",
-                                            validators=[Length(min=2, max=80, message="min 2 max 20"),
+                                            validators=[Length(min=2, max=120, message="min 2 max 120"),
                                                         Regexp(motif_regexp,
-                                                               message="pas d'espace")
+                                                               message="Ne mettez pas de ponctuation:?, ., :, ' etc")
                                                         ])
 
 

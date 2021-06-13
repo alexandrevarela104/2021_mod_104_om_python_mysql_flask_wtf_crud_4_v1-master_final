@@ -37,17 +37,6 @@ from APP_FILMS.essais_wtf_forms.wtf_forms_demo_select import DemoFormSelectWTF
 @obj_mon_application.route("/factures_afficher/<string:order_by>/<int:id_genre_sel>", methods=['GET', 'POST'])
 def factures_afficher(order_by, id_genre_sel):
     if request.method == "GET":
-
-        with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
-            destinataire = """SELECT id_destinataire, destinataire FROM t_destinataire ORDER BY id_destinataire ASC"""
-
-            mc_afficher.execute(destinataire)
-
-        with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
-            motif = """SELECT id_motif, motif FROM t_motif ORDER BY id_motif ASC"""
-
-            mc_afficher.execute(motif)
-
         try:
             try:
                 # Renvoie une erreur si la connexion est perdue.
@@ -56,9 +45,6 @@ def factures_afficher(order_by, id_genre_sel):
                 flash(f"Dans Gestion genres ...terrible erreur, il faut connecter une base de donnée", "danger")
                 print(f"Exception grave Classe constructeur GestionGenres {erreur.args[0]}")
                 raise MaBdErreurConnexion(f"{msg_erreurs['ErreurConnexionBD']['message']} {erreur.args[0]}")
-
-
-
 
             with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
                 if order_by == "ASC" and id_genre_sel == 0:
@@ -94,8 +80,6 @@ def factures_afficher(order_by, id_genre_sel):
 
                     mc_afficher.execute(strsql_genres_afficher)
 
-
-
                 data_genres = mc_afficher.fetchall()
 
                 print("data_genres ", data_genres, " Type : ", type(data_genres))
@@ -119,7 +103,6 @@ def factures_afficher(order_by, id_genre_sel):
             flash(f"RGG Exception {erreur} genres_afficher", "danger")
             raise Exception(f"RGG Erreur générale. {erreur}")
             # raise MaBdErreurOperation(f"RGG Exception {msg_erreurs['ErreurNomBD']['message']} {erreur}")
-
 
     # Envoie la page "HTML" au serveur.
     return render_template("factures/factures_afficher.html", data=data_genres)
@@ -148,6 +131,19 @@ def factures_afficher(order_by, id_genre_sel):
 @obj_mon_application.route("/factures_ajouter", methods=['GET', 'POST'])
 def factures_ajouter_wtf():
     form = FormWTFAjouterGenres()
+
+    if request.method == "GET":
+        with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
+            destinataire = """SELECT id_destinataire, destinataire FROM t_destinataire ORDER BY id_destinataire ASC"""
+
+            mc_afficher.execute(destinataire)
+
+        with MaBaseDeDonnee().connexion_bd.cursor() as mc_afficher:
+            motif = """SELECT id_motif, motif FROM t_motif ORDER BY id_motif ASC"""
+
+            mc_afficher.execute(motif)
+
+
     if request.method == "POST":
         try:
             try:
@@ -166,41 +162,46 @@ def factures_ajouter_wtf():
                 destinataire_wtf = request.form.get('destinataire')
                 motif_wtf = request.form.get('motif')
 
-
                 valeurs_insertion_dictionnaire = {"value_numerous_facture": numero_facture_wtf,
                                                   "value_somme": somme_wtf,
                                                   "value_delai": delai_wtf,
                                                   "value_payement": payement_wtf,
                                                   "value_destinataire": destinataire_wtf,
                                                   "value_motif": motif_wtf}
-                print("-------------------------------------------------------------------")
-                print("valeurs_insertion_dictionnaire ", valeurs_insertion_dictionnaire)
-                print("-------------------------------------------------------------------")
 
-                # Création de la facture dans la table facture
+
                 strsql_insert_facture = """INSERT INTO t_facture (id_facture,numero_facture,somme,delai,payement) VALUES (NULL,%(value_numerous_facture)s,%(value_somme)s,%(value_delai)s,%(value_payement)s)"""
-                with MaBaseDeDonnee().connexion_bd.cursor() as mconn_bd:
-                    mconn_bd.execute(strsql_insert_facture, valeurs_insertion_dictionnaire)
+                with MaBaseDeDonnee() as mconn_bd:
+                    mconn_bd.mabd_execute(strsql_insert_facture, valeurs_insertion_dictionnaire)
+                    mconn_bd.connexion_bd.commit()
 
-                # Ici, j'essaie de récuperer l'id de la facture que je viens de créer, pour l'associer au destinataire/motif
-                strsql_insert_fac = """SELECT `id_facture` FROM `t_facture` ORDER BY `id_facture` DESC LIMIT 1"""
-                with MaBaseDeDonnee().connexion_bd.cursor() as mconn_bd:
-                    mconn_bd.execute(strsql_insert_fac, valeurs_insertion_dictionnaire)
-                    id_facture = mconn_bd.fetchall()[0]
-                print(id_facture)
+                    # Ici, j'essaie de récuperer l'id de la facture que je viens de créer, pour l'associer au destinataire/motif
+                    strsql_insert_fac = """SELECT `id_facture` FROM `t_facture` ORDER BY `id_facture` DESC LIMIT 1"""
+                    with MaBaseDeDonnee().connexion_bd.cursor() as mconn_bd:
+                        mconn_bd.execute(strsql_insert_fac)
+                        id_facture = mconn_bd.fetchall()
+                    print(id_facture)
 
-                # Ici, j'essaie de faire la liason de la fk facture et fk destinataire en récuperant la dernière id crée
-                strsql_insert_fk = """INSERT INTO t_avoir_destinataire (id_avoir_destinataire,fk_facture,fk_destinataire) VALUES (NULL,%(id_facture)s,%(value_destinataire)s)"""
-                with MaBaseDeDonnee().connexion_bd.cursor() as mconn_bd:
-                    mconn_bd.execute(strsql_insert_fk, valeurs_insertion_dictionnaire)
+                    valeurs_update_fk = {"id_facture": id_facture[0]["id_facture"],
+                                                      "value_destinataire": valeurs_insertion_dictionnaire["value_destinataire"],
+                                         "value_motif": valeurs_insertion_dictionnaire["value_motif"]}
 
+                    # Ici, j'essaie de faire la liason de la fk facture et fk destinataire en récuperant la dernière id crée
+                    strsql_insert_fk = """INSERT INTO `t_avoir_destinataire` (`id_avoir_destinataire`, `fk_facture`, `fk_destinataire`, `enregistrement`) VALUES (NULL, %(id_facture)s, %(value_destinataire)s, CURRENT_TIMESTAMP)"""
+                    with MaBaseDeDonnee() as mconn_bd:
+                     mconn_bd.mabd_execute(strsql_insert_fk,valeurs_update_fk)
 
+                     # Ici, j'essaie de faire la liason de la fk facture et fk destinataire en récuperant la dernière id crée
+                     strsql_insert_fk_motif = """INSERT INTO `t_avoir_motif` (`id_avoir_motif`, `fk_facture`, `fk_motif`) VALUES (NULL, %(id_facture)s, %(value_motif)s)"""
+                     with MaBaseDeDonnee() as mconn_bd:
+                         mconn_bd.mabd_execute(strsql_insert_fk_motif, valeurs_update_fk)
 
+                     print("-------------------------------------------------------------------")
+                     print("valeurs_update_fk ", valeurs_update_fk)
+                     print("-------------------------------------------------------------------")
 
                 flash(f"Données insérées !!", "success")
                 print(f"Données insérées !!")
-
-
 
                 # Pour afficher et constater l'insertion de la valeur, on affiche en ordre inverse. (DESC)
                 return redirect(url_for('factures_afficher', order_by='DESC', id_genre_sel=0))
@@ -284,6 +285,9 @@ def facture_update_wtf():
             somme_update = form_update.somme_update_wtf.data
             delai_update = form_update.delai_update_wtf.data
             payement_update = form_update.payement_update_wtf.data
+
+
+
 
             numero_facture_update = numero_facture_update.lower()
             somme_update = somme_update.lower()
